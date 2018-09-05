@@ -1,43 +1,16 @@
 import cv2
 from M import *
 
-src=cv2.imread("2.jpg")
-GaussianBlur = cv2.GaussianBlur(src,(5,5),0,0)
-medianBlur = cv2.medianBlur(src,5)
-cv2.imwrite("GaussianBlur.jpg",GaussianBlur)
-cv2.imwrite("medianBlur.jpg",medianBlur)
 
-
-
-# path = "/home/m/Desktop/"
-# raw = cv2.imread(path + "4.jpg")
-raw = cv2.imread("a.jpg")
-raw2 = cv2.cvtColor(raw, cv2.COLOR_BGR2GRAY)
-raw = cv2.cvtColor(raw, cv2.COLOR_BGR2GRAY)
-a, b, tagp = noise_array(raw2)
-rows = raw2.shape
-
-cv2.imwrite("gray.jpg", raw2)
-cv2.imwrite("tagp.jpg", tagp)
-
-tag = 0
-n = 0
-end = 0
-if rows[0] > rows[1]:
-    tag = 0
-    n = rows[1]
-    end = rows[0]
-else:
-    tag = 1
-    n = rows[0]
-    end = rows[1]
-
+#  原始中心点左侧的六个点,和他的上下两个点一共八个点
 nx = [-1, -1, -1, 0, 0, +1, +1, +1]
 ny = [-2, -1, 0, -2, -1, -2, -1, 0]
 
 
 # 处理过程,每当遇到被标记为矛盾的点就进行处理修正.
-def change(raw2, i, j, tagp):
+# 取其中的两块区域中的最大值与最小值,然后按照与哪个最接近进行分类处理
+# 最后判断矛盾点的值与哪个值就接近就把值赋给他
+def change2(raw2, i, j, tagp):
     pos = 0
     min = 256
     max = -1
@@ -73,7 +46,7 @@ def change(raw2, i, j, tagp):
             tagp[i, j] = 0
 
 
-
+#  测试输出change 函数的是否正确
 def changeTest(raw2, i, j, tagp,test):
     pos = 0
     min = 256
@@ -118,15 +91,18 @@ def changeTest(raw2, i, j, tagp,test):
 
 
 
-
+#  高权重区域代表上下左右四个像素值
 hx = [-1, 0, 0, +1]
 hy = [0, -1, +1, 0]
-
+#  低权重区域代表区域的四个角
 lx = [-1, -1, +1, +1]
 ly = [-1, +1, -1, +1]
 
 
-def change2(raw2, i, j, tagp):
+
+# 按照权重区域进行取值,如果发现权重比较多的区域有正确的值那么我们就取其为我买的修复值
+# 否则取低权重部分的值
+def change(raw2, i, j, tagp):
     tag = 4
     min = 256
     for m in range(4):
@@ -142,13 +118,17 @@ def change2(raw2, i, j, tagp):
     #             if temp < min:
     #                 min = temp
     #                 tag = m
+
+    # tag只能取到0到3,超过这个值说明周围没有合适的值
     if (tag < 4):
-        raw2[i, j] = raw[i + hx[tag], j + hy[tag]]
+        raw2[i, j] = raw2[i + hx[tag], j + hy[tag]]
         tagp[i, j] = 0
 
 
-# 进行从边界旋转,每次增加一行,并处理行列不相等,多余的空行
-def solve(raw2):
+
+
+# 进行从边界旋转,每次增加一行和一列,并处理行列不相等,多余的部分
+def solve(raw2,tagp,n,end,tag):
     gotag = 0
     for i in range(2, n - 1):
         for k in range(i):
@@ -169,13 +149,13 @@ def solve(raw2):
     # 去除多余的行或者列
     for j in range(n, end - 1):
         if tag == 0:
-            for k in range(1, rows[1] - 1):
+            for k in range(1, n - 1):
                 if tagp[j, k] == 255:
                     change(raw2, j, k, tagp)
                     gotag = 1
                 # print(raw2[j, k], end=" ")
         if tag == 1:
-            for k in range(1, rows[0] - 1):
+            for k in range(1, n - 1):
                 if tagp[k, j] == 255:
                     change(raw2, k, j, tagp)
                     gotag = 1
