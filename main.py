@@ -5,7 +5,7 @@ from change import *
 path = ""
 
 src = cv2.imread(path + "2.jpg")
-GaussianBlur = cv2.GaussianBlur(src, (5, 5), 0, 0)
+GaussianBlur = cv2.GaussianBlur(src, (11, 11), 0, 0)
 medianBlur = cv2.medianBlur(src, 5)
 cv2.imwrite("GaussianBlur.jpg", GaussianBlur)
 cv2.imwrite("medianBlur.jpg", medianBlur)

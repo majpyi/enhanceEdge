@@ -177,8 +177,10 @@ def findSingleNoise(raw2, a, b):
     # re = np.zeros(raw2.shape[0], raw2.shape[1])
     re = np.zeros((a, b))
     # re = raw2.copy()
-    for i in range(1, a - 1):
-        for j in range(1, b - 1):
+    # for i in range(1, a - 1):
+    #     for j in range(1, b - 1):
+    for i in range(3, a - 3):
+        for j in range(3, b - 3):
             pos = [0, 0, 0, 0, 0, 0, 0, 0]
             for m in range(8):
                 pos[m] = abs(raw2[i + xx[m + 1], j + yy[m + 1]] - raw2[i + xx[m], j + yy[m]])
@@ -194,10 +196,46 @@ def findSingleNoise(raw2, a, b):
             Threshold = 200
             if (abs(post1 - post2) == 1):
                 # if( abs ( raw2[i + xx[post1], j + yy[post1] ] -  raw2[i + xx[post2], j + yy[post2] ]  ) >50 ):
-                if(pos1[7] > Threshold and pos1[6] >Threshold ):
+                # if (pos1[7] > Threshold and pos1[6] > Threshold):
+                if (isolated(raw2, i + xx[max(post1, post2)], j + yy[max(post1, post2)], re) == 1):
                     re[i + xx[max(post1, post2)], j + yy[max(post1, post2)]] = 255
             if (abs(post1 - post2) == 7):
                 # if( abs ( raw2[i + xx[post1], j + yy[post1] ] -  raw2[i + xx[post2], j + yy[post2] ]  ) >30 ):
-                if(pos1[7] > Threshold and pos1[6] >Threshold ):
+                # if (pos1[7] > Threshold and pos1[6] > Threshold):
+                if (isolated(raw2, i + xx[0], j + yy[0], re) == 1):
                     re[i + xx[0], j + yy[0]] = 255
     return re
+
+
+#  5x5
+gx = [-2, -2, -2, -2, -2, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0, +1, +1, +1, +1, +1, +2, +2, +2, +2, +2]
+gy = [-2, -1, 0, +1, +2, -2, -1, 0, +1, +2, -2, -1, 0, +1, +2, -2, -1, 0, +1, +2, -2, -1, 0, +1, +2]
+weight = [1, 4, 7, 4, 1, 4, 16, 26, 16, 4, 7, 26, 41, 26, 7, 4, 16, 26, 16, 4, 1, 4, 7, 4, 1]
+
+
+def gaussian(raw2, x, y):
+    for i in range(x):
+        for j in range(y):
+            sumweight = 0
+            for k in range(len(gx)):
+                sumweight += raw2[x + gx[k], y + gy[k]] * weight[k]
+            raw2[i, j] = sumweight / 273
+
+
+#  3*3
+xxx = [-1, -1, -1, 0, +1, +1, +1, 0]
+yyy = [+1, 0, -1, -1, -1, 0, +1, +1]
+
+
+def isolated(raws, x, y, tagp):
+    tag1 = 0
+    tag2 = 0
+    for m in range(len(xxx)):
+        if (raws[x, y] > raws[x + xxx[m], y + yyy[m] ]):
+            tag1 += 1
+        if (raws[x, y] < raws[x + xxx[m], y + yyy[m] ]):
+            tag2 += 1
+    if (tag1 == 8 or tag2 == 8):
+        tagp[x, y] = 0
+        return 1
+    return 0
