@@ -33,6 +33,8 @@ else:
     end = rows[1]
 
 totag = 0
+
+
 # raws 原始图像  tagp 标记矛盾点 , n 方形结束位置 , end 剩余部分结束位置 , tag 标记行多还是列多
 # while solve(raw2, tagp, n, end, tag, totag) == 1:
 #     totag = 0

@@ -158,7 +158,7 @@ def solve(raw2, tagp, n, end, tag, gotag):
                 # print(raw2[k, j], end=" ")
     return gotag
 
-
+# 简单的原始从左向右从上到下的遍历处理方式
 def solve1(x, y, raw2, tagp, gotag):
     for i in range(x - 1):
         for j in range(y - 1):
@@ -168,11 +168,11 @@ def solve1(x, y, raw2, tagp, gotag):
 
     return gotag
 
-
+# 从右上角进行的逆时针循环
 xx = [-1, -1, -1, 0, +1, +1, +1, 0, -1]
 yy = [+1, 0, -1, -1, -1, 0, +1, +1, +1]
 
-
+# 查找孤立的噪声点,对单个像素点的判断有一部简单判断与两部再次判断的方式
 def findSingleNoise(raw2, a, b):
     # re = np.zeros(raw2.shape[0], raw2.shape[1])
     re = np.zeros((a, b))
@@ -207,12 +207,12 @@ def findSingleNoise(raw2, a, b):
     return re
 
 
-#  5x5
+#  5x5  周围25邻域的坐标信息,包括中心点的坐标,用于进行高斯滤波的处理
 gx = [-2, -2, -2, -2, -2, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0, +1, +1, +1, +1, +1, +2, +2, +2, +2, +2]
 gy = [-2, -1, 0, +1, +2, -2, -1, 0, +1, +2, -2, -1, 0, +1, +2, -2, -1, 0, +1, +2, -2, -1, 0, +1, +2]
 weight = [1, 4, 7, 4, 1, 4, 16, 26, 16, 4, 7, 26, 41, 26, 7, 4, 16, 26, 16, 4, 1, 4, 7, 4, 1]
 
-
+# 对特点坐标点的像素值进行高斯滤波处理
 def gaussian(raw2, x, y ,re):
     sumweight = 0
     for k in range(len(gx)):
@@ -220,11 +220,11 @@ def gaussian(raw2, x, y ,re):
     re[x, y] = sumweight / 273
 
 
-#  3*3
+#  3*3 周围八邻域的坐标,不包括中心点
 xxx = [-1, -1, -1, 0, +1, +1, +1, 0]
 yyy = [+1, 0, -1, -1, -1, 0, +1, +1]
 
-
+# 判断是否是孤立的噪声点,比较周围的八个邻域点,如果是突出或者是凹陷就可能是噪声点,处理之后图像更加平滑
 def isolated(raws, x, y, tagp):
     tag1 = 0
     tag2 = 0
@@ -238,6 +238,7 @@ def isolated(raws, x, y, tagp):
         return 1
     return 0
 
+# 原始递归处理方法,对非孤立噪声点是用高斯滤波进行处理
 def map(raws,x,y,noise):
     re = raws.copy()
     for i in range(5,x-5):
