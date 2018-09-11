@@ -213,13 +213,11 @@ gy = [-2, -1, 0, +1, +2, -2, -1, 0, +1, +2, -2, -1, 0, +1, +2, -2, -1, 0, +1, +2
 weight = [1, 4, 7, 4, 1, 4, 16, 26, 16, 4, 7, 26, 41, 26, 7, 4, 16, 26, 16, 4, 1, 4, 7, 4, 1]
 
 
-def gaussian(raw2, x, y):
-    for i in range(x):
-        for j in range(y):
-            sumweight = 0
-            for k in range(len(gx)):
-                sumweight += raw2[x + gx[k], y + gy[k]] * weight[k]
-            raw2[i, j] = sumweight / 273
+def gaussian(raw2, x, y ,re):
+    sumweight = 0
+    for k in range(len(gx)):
+        sumweight += raw2[x + gx[k], y + gy[k]] * weight[k]
+    re[x, y] = sumweight / 273
 
 
 #  3*3
@@ -239,3 +237,11 @@ def isolated(raws, x, y, tagp):
         tagp[x, y] = 0
         return 1
     return 0
+
+def map(raws,x,y,noise):
+    re = raws.copy()
+    for i in range(5,x-5):
+        for j in range(5,y-5):
+            if(noise[i,j]!=255):
+                gaussian(raws,i,j,re)
+    return re

@@ -10,11 +10,11 @@ medianBlur = cv2.medianBlur(src, 5)
 cv2.imwrite("GaussianBlur.jpg", GaussianBlur)
 cv2.imwrite("medianBlur.jpg", medianBlur)
 
-raw = cv2.imread(path + "4.jpg")
+raw = cv2.imread(path + "jaoyan.jpg")
 raw2 = cv2.cvtColor(raw, cv2.COLOR_BGR2GRAY)
 raw = cv2.cvtColor(raw, cv2.COLOR_BGR2GRAY)
-# a, b, tagp = noise_array(raw2)
-tagp = np.zeros((3,3))
+a, b, tagp = noise_array(raw2)
+# tagp = np.zeros((3,3))
 rows = raw2.shape
 
 cv2.imwrite(path + "gray.jpg", raw2)
@@ -60,8 +60,8 @@ np.savetxt('a.csv', noise, fmt="%d", delimiter=',')
 cv2.imwrite("singleNoise.jpg", noise)
 
 
-
-
+gauss = map(raw2,rows[0],rows[1],noise)
+cv2.imwrite("gauss.jpg", gauss)
 
 
 cv2.imwrite("C.jpg", raw2)
