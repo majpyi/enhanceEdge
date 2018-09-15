@@ -1,5 +1,6 @@
 import cv2
 from M import *
+import modify
 
 #  原始中心点左侧的六个点,和他的上下两个点一共八个点
 nx = [-1, -1, -1, 0, 0, +1, +1, +1]
@@ -158,6 +159,7 @@ def solve(raw2, tagp, n, end, tag, gotag):
                 # print(raw2[k, j], end=" ")
     return gotag
 
+
 # 简单的原始从左向右从上到下的遍历处理方式
 def solve1(x, y, raw2, tagp, gotag):
     for i in range(x - 1):
@@ -168,9 +170,11 @@ def solve1(x, y, raw2, tagp, gotag):
 
     return gotag
 
+
 # 从右上角进行的逆时针循环
 xx = [-1, -1, -1, 0, +1, +1, +1, 0, -1]
 yy = [+1, 0, -1, -1, -1, 0, +1, +1, +1]
+
 
 # 查找孤立的噪声点,对单个像素点的判断有一部简单判断与两部再次判断的方式
 def findSingleNoise(raw2, a, b):
@@ -212,37 +216,114 @@ gx = [-2, -2, -2, -2, -2, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0, +1, +1, +1, +1, +1,
 gy = [-2, -1, 0, +1, +2, -2, -1, 0, +1, +2, -2, -1, 0, +1, +2, -2, -1, 0, +1, +2, -2, -1, 0, +1, +2]
 weight = [1, 4, 7, 4, 1, 4, 16, 26, 16, 4, 7, 26, 41, 26, 7, 4, 16, 26, 16, 4, 1, 4, 7, 4, 1]
 
+
 # 对特点坐标点的像素值进行高斯滤波处理
-def gaussian(raw2, x, y ,re):
+def gaussian(raw2, x, y, re):
     sumweight = 0
     for k in range(len(gx)):
-        sumweight += raw2[x + gx[k], y + gy[k]] * weight[k]
-    re[x, y] = sumweight / 273
+        sumweight += (raw2[x + gx[k], y + gy[k]] * weight[k]) / 273
+    # re[x, y] = sumweight / 273
+    re[x, y] = sumweight
 
 
 #  3*3 周围八邻域的坐标,不包括中心点
 xxx = [-1, -1, -1, 0, +1, +1, +1, 0]
 yyy = [+1, 0, -1, -1, -1, 0, +1, +1]
 
+
 # 判断是否是孤立的噪声点,比较周围的八个邻域点,如果是突出或者是凹陷就可能是噪声点,处理之后图像更加平滑
 def isolated(raws, x, y, tagp):
     tag1 = 0
     tag2 = 0
     for m in range(len(xxx)):
-        if (raws[x, y] > raws[x + xxx[m], y + yyy[m] ]):
+        if (raws[x, y] > raws[x + xxx[m], y + yyy[m]]):
             tag1 += 1
-        if (raws[x, y] < raws[x + xxx[m], y + yyy[m] ]):
+        if (raws[x, y] < raws[x + xxx[m], y + yyy[m]]):
             tag2 += 1
     if (tag1 == 8 or tag2 == 8):
-        tagp[x, y] = 0
+        tagp[x, y] = 255
         return 1
     return 0
 
+
 # 原始递归处理方法,对非孤立噪声点是用高斯滤波进行处理
-def map(raws,x,y,noise):
+def map(raws, x, y, noise):
     re = raws.copy()
-    for i in range(5,x-5):
-        for j in range(5,y-5):
-            if(noise[i,j]!=255):
-                gaussian(raws,i,j,re)
+    # print(type(re))
+    for i in range(5, x - 5):
+        for j in range(5, y - 5):
+            if (noise[i, j] != 255):
+                gaussian(raws, i, j, re)
     return re
+
+
+# 对孤立噪声点进行修复处理,把周围八邻域中没有标记为噪声的元素的平均值赋给它.
+def singleNoisefix(raws, x, y, noise, re):
+    sum = 0
+    num = 0
+    for i in range(8):
+        if (noise[x + xxx[i], y + yyy[i]] == 0):
+            sum += raws[x + xxx[i], y + yyy[i]]
+            num += 1
+    if (num != 0):
+        re[x, y] = sum / num
+    # print(type(re))
+
+
+# 递归遍历剩余的孤立噪声点,进行单独处理
+def fixSingleNoise(raws, x, y, noise):
+    re = raws.copy()  # 忘记加()
+    # print(type(re))
+    for i in range(2, x - 1):
+        for j in range(2, y - 1):
+            if (noise[i, j] == 255):
+                singleNoisefix(raws, i, j, noise, re)
+    return re
+
+
+def gradient(raws, x, y):
+    re = raws.copy()
+    for i in range(1, x - 1):
+        for j in range(1, y - 1):
+            noise, a, b = modify.point_classification(raws, i, j, 1)
+            # print(a)
+            # print(b)
+            point_a = []
+            point_b = []
+            for k in range(len(a)):
+                # point_a.append(raws[i + a[k][0] - 1, j + a[k][1] - 1])
+                point_a.append(raws[a[k][0] - 1,a[k][1] - 1])
+            for k in range(len(b)):
+                # point_b.append(raws[i + b[k][0] - 1, j + b[k][1] - 1])
+                point_b.append(raws[b[k][0] - 1, b[k][1] - 1])
+
+            maxa = max(point_a)
+            maxb = max(point_b)
+            mina = min(point_a)
+            minb = min(point_b)
+            if (mina > maxb):
+                re[i, j] = mina - maxb
+            elif (minb > maxa):
+                re[i, j] = minb - maxa
+            else:
+                re[i, j] = 0
+    return re
+
+xx_tag = [-1, -1, -1, 0, +1, +1, +1, 0, 0]
+yy_tag = [+1, 0, -1, -1, -1, 0, +1, +1, 0]
+def gradient_tag(raws,x,y):
+    re = raws.copy()
+    tag = np.zeros((x,y))
+    for i in range(1,x-1):
+        for j in range(1,y-1):
+            max_tag = []
+            for k in range(9):
+                max_tag.append(re[i+xx_tag[k],j+yy_tag[k]])
+            for k in range(9):
+                # if(re[i+xx_tag[k],j+yy_tag[k]]<max(max_tag)):
+                    # re[i + xx_tag[k], j + yy_tag[k]] = 0
+                # else:
+                if(re[i+xx_tag[k],j+yy_tag[k]]==max(max_tag) and max(max_tag) > 5):
+                    re[i + xx_tag[k], j + yy_tag[k]] = 0
+                    tag[i + xx_tag[k], j + yy_tag[k]] = 255
+    return  tag
