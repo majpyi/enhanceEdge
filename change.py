@@ -292,7 +292,7 @@ def gradient(raws, x, y):
             point_b = []
             for k in range(len(a)):
                 # point_a.append(raws[i + a[k][0] - 1, j + a[k][1] - 1])
-                point_a.append(raws[a[k][0] - 1,a[k][1] - 1])
+                point_a.append(raws[a[k][0] - 1, a[k][1] - 1])
             for k in range(len(b)):
                 # point_b.append(raws[i + b[k][0] - 1, j + b[k][1] - 1])
                 point_b.append(raws[b[k][0] - 1, b[k][1] - 1])
@@ -309,21 +309,67 @@ def gradient(raws, x, y):
                 re[i, j] = 0
     return re
 
+
+def gradient_average(raws, x, y):
+    re = raws.copy()
+    for i in range(1, x - 1):
+        for j in range(1, y - 1):
+            noise, a, b = modify.point_classification(raws, i, j, 1)
+            # print(a)
+            # print(b)
+            # point_a = []
+            # point_b = []
+
+            sum_a =0
+            num_a = 0
+            sum_b =0
+            num_b = 0
+            for k in range(len(a)):
+                # point_a.append(raws[i + a[k][0] - 1, j + a[k][1] - 1])
+                # point_a.append(raws[a[k][0] - 1, a[k][1] - 1])
+                sum_a+=raws[a[k][0] - 1, a[k][1] - 1]
+                num_a+=1
+
+            for k in range(len(b)):
+                # point_b.append(raws[i + b[k][0] - 1, j + b[k][1] - 1])
+                # point_b.append(raws[b[k][0] - 1, b[k][1] - 1])
+                sum_b+=raws[b[k][0] - 1, b[k][1] - 1]
+                num_b+=1
+            # maxa = max(point_a)
+            # maxb = max(point_b)
+            # mina = min(point_a)
+            # minb = min(point_b)
+            # if (mina > maxb):
+            #     re[i, j] = mina - maxb
+            # elif (minb > maxa):
+            #     re[i, j] = minb - maxa
+            # else:
+            #     re[i, j] = 0
+            re[i,j] = abs(sum_a/num_a - sum_b/num_b)
+    return re
+
+
+
+
+
+
 xx_tag = [-1, -1, -1, 0, +1, +1, +1, 0, 0]
 yy_tag = [+1, 0, -1, -1, -1, 0, +1, +1, 0]
-def gradient_tag(raws,x,y):
+
+
+def gradient_tag(raws, x, y):
     re = raws.copy()
-    tag = np.zeros((x,y))
-    for i in range(1,x-1):
-        for j in range(1,y-1):
+    tag = np.zeros((x, y))
+    for i in range(1, x - 1):
+        for j in range(1, y - 1):
             max_tag = []
             for k in range(9):
-                max_tag.append(re[i+xx_tag[k],j+yy_tag[k]])
+                max_tag.append(re[i + xx_tag[k], j + yy_tag[k]])
             for k in range(9):
                 # if(re[i+xx_tag[k],j+yy_tag[k]]<max(max_tag)):
-                    # re[i + xx_tag[k], j + yy_tag[k]] = 0
+                # re[i + xx_tag[k], j + yy_tag[k]] = 0
                 # else:
-                if(re[i+xx_tag[k],j+yy_tag[k]]==max(max_tag) and max(max_tag) > 5):
+                if (re[i + xx_tag[k], j + yy_tag[k]] == max(max_tag) and max(max_tag) > 5):
                     re[i + xx_tag[k], j + yy_tag[k]] = 0
                     tag[i + xx_tag[k], j + yy_tag[k]] = 255
-    return  tag
+    return tag
