@@ -281,6 +281,7 @@ def fixSingleNoise(raws, x, y, noise):
     return re
 
 
+# 在根据最小能量的方法去掉一个最大概率矛盾点的情况下,按照划分的两个区域中大区域的最小值与小区域的最大值的差作为区分度
 def gradient(raws, x, y):
     re = raws.copy()
     for i in range(1, x - 1):
@@ -310,6 +311,7 @@ def gradient(raws, x, y):
     return re
 
 
+# 在根据最小能量的方法去掉一个最大概率矛盾点的情况下,再按照两个区域的均值差,得到区分度值
 def gradient_average(raws, x, y):
     re = raws.copy()
     for i in range(1, x - 1):
@@ -320,21 +322,21 @@ def gradient_average(raws, x, y):
             # point_a = []
             # point_b = []
 
-            sum_a =0
+            sum_a = 0
             num_a = 0
-            sum_b =0
+            sum_b = 0
             num_b = 0
             for k in range(len(a)):
                 # point_a.append(raws[i + a[k][0] - 1, j + a[k][1] - 1])
                 # point_a.append(raws[a[k][0] - 1, a[k][1] - 1])
-                sum_a+=raws[a[k][0] - 1, a[k][1] - 1]
-                num_a+=1
+                sum_a += raws[a[k][0] - 1, a[k][1] - 1]
+                num_a += 1
 
             for k in range(len(b)):
                 # point_b.append(raws[i + b[k][0] - 1, j + b[k][1] - 1])
                 # point_b.append(raws[b[k][0] - 1, b[k][1] - 1])
-                sum_b+=raws[b[k][0] - 1, b[k][1] - 1]
-                num_b+=1
+                sum_b += raws[b[k][0] - 1, b[k][1] - 1]
+                num_b += 1
             # maxa = max(point_a)
             # maxb = max(point_b)
             # mina = min(point_a)
@@ -345,18 +347,15 @@ def gradient_average(raws, x, y):
             #     re[i, j] = minb - maxa
             # else:
             #     re[i, j] = 0
-            re[i,j] = abs(sum_a/num_a - sum_b/num_b)
+            re[i, j] = abs(sum_a / num_a - sum_b / num_b)
     return re
-
-
-
-
 
 
 xx_tag = [-1, -1, -1, 0, +1, +1, +1, 0, 0]
 yy_tag = [+1, 0, -1, -1, -1, 0, +1, +1, 0]
 
 
+# 根据梯度值,只标记八邻域中区分度值最大的点,而且这个点的区分度值要大于一个阈值
 def gradient_tag(raws, x, y):
     re = raws.copy()
     tag = np.zeros((x, y))
@@ -373,3 +372,37 @@ def gradient_tag(raws, x, y):
                     re[i + xx_tag[k], j + yy_tag[k]] = 0
                     tag[i + xx_tag[k], j + yy_tag[k]] = 255
     return tag
+
+
+transition = 1
+
+
+#
+def extend_edge(raws, th):
+    tag = np.zeros((raws.shape[0], raws.shape[1]))
+    for i in range(1, raws.shape[0] - 1):
+        for j in range(1, raws.shape[1] - 1):
+            if (raws[i, j] > th and tag[i, j] != transition):
+                tag[i, j] = 255
+                find_next_edge(raws, i, j, th, tag)
+    return tag
+
+
+def find_next_edge(raws, x, y, th, tag):
+    pos = []
+    extend = []
+    for k in range(8):
+        pos.append(raws[x + xxx[k], y + yyy[k]])
+    for k in range(8):
+        if (x == 0 or x == raws.shape[0] or y == 0 or y == raws.shape[1]):
+            return
+        elif (raws[x + xxx[k], y + yyy[k]] == max(pos) and tag[x + xxx[k], y + yyy[k]] != 255):
+            extend.append(xxx[k])
+            extend.append(yyy[k])
+        elif (tag[x + xxx[k], y + yyy[k]] != 255):
+            tag[x + xxx[k], y + yyy[k]] = transition
+    if (len(extend) >= 2):
+        for l in range(len(extend), 2):
+            if (tag[x + extend[l], y + extend[l + 1]] != transition and raws[x + extend[l], y + extend[l + 1]] > th):
+                tag[x + extend[l], y + extend[l + 1]] = 255
+                find_next_edge(raws, x + extend[l], y + extend[l + 1], tag)

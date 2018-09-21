@@ -67,7 +67,6 @@ cv2.imwrite("gauss.jpg", gauss)
 re = fixSingleNoise(gauss, rows[0], rows[1], noise)
 cv2.imwrite("last.jpg", re)
 
-
 cv2.imwrite("C.jpg", raw2)
 np.savetxt('re.csv', raw2, fmt="%d", delimiter=',')
 np.savetxt('raw.csv', raw, fmt="%d", delimiter=',')
