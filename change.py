@@ -313,7 +313,7 @@ def gradient(raws, x, y):
 
 # 在根据最小能量的方法去掉一个最大概率矛盾点的情况下,再按照两个区域的均值差,得到区分度值
 def gradient_average(raws, x, y):
-    re = raws.copy()
+    re = np.zeros((x, y))
     for i in range(1, x - 1):
         for j in range(1, y - 1):
             noise, a, b = modify.point_classification(raws, i, j, 1)
@@ -326,16 +326,20 @@ def gradient_average(raws, x, y):
             num_a = 0
             sum_b = 0
             num_b = 0
+            min_a = 255
+            min_b = 255
             for k in range(len(a)):
                 # point_a.append(raws[i + a[k][0] - 1, j + a[k][1] - 1])
                 # point_a.append(raws[a[k][0] - 1, a[k][1] - 1])
-                sum_a += raws[a[k][0] - 1, a[k][1] - 1]
+                # sum_a += raws[a[k][0] - 1, a[k][1] - 1]
+                sum_a += raws[a[k][0], a[k][1]]
                 num_a += 1
 
             for k in range(len(b)):
                 # point_b.append(raws[i + b[k][0] - 1, j + b[k][1] - 1])
                 # point_b.append(raws[b[k][0] - 1, b[k][1] - 1])
-                sum_b += raws[b[k][0] - 1, b[k][1] - 1]
+                # sum_b += raws[b[k][0] - 1, b[k][1] - 1]
+                sum_b += raws[b[k][0], b[k][1]]
                 num_b += 1
             # maxa = max(point_a)
             # maxb = max(point_b)
@@ -347,8 +351,79 @@ def gradient_average(raws, x, y):
             #     re[i, j] = minb - maxa
             # else:
             #     re[i, j] = 0
+            # for k in range(len(a)):
+            #     temp = abs(raws[i, j] - raws[a[k][0] - 1, a[k][1] - 1])
+            #     if (min_a > temp):
+            #         min_a = temp
+            # for k in range(len(b)):
+            #     temp = abs(raws[i, j] - raws[b[k][0] - 1, b[k][1] - 1])
+            #     if (min_b > temp):
+            #         min_b = temp
+            #
+            # re[i, j] = abs(sum_a / num_a - sum_b / num_b)
+            #
+            # if (min_a > min_b):
+            #     if (sum_a / num_a > sum_b / num_b):
+            #         re[i, j] = -re[i, j]
+            #     else:
+            #         re[i, j] = re[i, j]
+            # if (min_a < min_b):
+            #     if (sum_a / num_a > sum_b / num_b):
+            #         re[i, j] = re[i, j]
+            #     else:
+            #         re[i, j] = -re[i, j]
+            # if( abs(sum_a / num_a - sum_b / num_b) >5):
+            #     re[i, j] = abs(sum_a - sum_b)
+
+            avg_a = sum_a / num_a
+            avg_b = sum_b / num_b
+            if (abs(raws[i, j] - avg_a) > abs(raws[i, j] - avg_b)):
+                # if (avg_a > avg_b):
+                    re[i, j] = avg_b - avg_a
+                # else:
+                #     re[i,j] = avg_b - avg_a
+            if (abs(raws[i, j] - avg_a) < abs(raws[i, j] - avg_b)):
+                # if (avg_a > avg_b):
+                    re[i, j] = avg_a - avg_b
+                # else:
+                #     re[i,j] = avg_a - avg_b
+
+            # re[i,j] = abs(avg_a-avg_b)
+    return re
+
+
+def gradient_average_abs(raws, x, y):
+    re = np.zeros((x, y))
+    for i in range(1, x - 1):
+        for j in range(1, y - 1):
+            noise, a, b = modify.point_classification(raws, i, j, 1)
+            # print(a)
+            # print(b)
+            # point_a = []
+            # point_b = []
+
+            sum_a = 0
+            num_a = 0
+            sum_b = 0
+            num_b = 0
+            min_a = 255
+            min_b = 255
+            for k in range(len(a)):
+                # point_a.append(raws[i + a[k][0] - 1, j + a[k][1] - 1])
+                # point_a.append(raws[a[k][0] - 1, a[k][1] - 1])
+                # sum_a += raws[a[k][0] - 1, a[k][1] - 1]
+                sum_a += raws[a[k][0], a[k][1]]
+                num_a += 1
+
+            for k in range(len(b)):
+                # point_b.append(raws[i + b[k][0] - 1, j + b[k][1] - 1])
+                # point_b.append(raws[b[k][0] - 1, b[k][1] - 1])
+                # sum_b += raws[b[k][0] - 1, b[k][1] - 1]
+                sum_b += raws[b[k][0], b[k][1]]
+                num_b += 1
             re[i, j] = abs(sum_a / num_a - sum_b / num_b)
     return re
+
 
 
 xx_tag = [-1, -1, -1, 0, +1, +1, +1, 0, 0]
@@ -374,35 +449,142 @@ def gradient_tag(raws, x, y):
     return tag
 
 
+# transition = 1
+#
+#
+# def extend_edge(raws, th):
+#     tag = np.zeros((raws.shape[0], raws.shape[1]))
+#     for i in range(1, raws.shape[0] - 1):
+#         for j in range(1, raws.shape[1] - 1):
+#             if (raws[i, j] > th and tag[i, j] != transition):
+#                 tag[i, j] = 255
+#                 find_next_edge(raws, i, j, th, tag)
+#     return tag
+#
+#
+# def find_next_edge(raws, x, y, th, tag):
+#     pos = []
+#     extend = []
+#     for k in range(8):
+#         if (x == 0 or x == raws.shape[0] or y == 0 or y == raws.shape[1]):
+#             return
+#         pos.append(raws[x + xxx[k], y + yyy[k]])
+#     for k in range(8):
+#         if (x == 0 or x == raws.shape[0] or y == 0 or y == raws.shape[1]):
+#             return
+#         elif (raws[x + xxx[k], y + yyy[k]] == max(pos) and tag[x + xxx[k], y + yyy[k]] != 255):
+#             extend.append(xxx[k])
+#             extend.append(yyy[k])
+#         elif (tag[x + xxx[k], y + yyy[k]] != 255):
+#             tag[x + xxx[k], y + yyy[k]] = transition
+#     if (len(extend) >= 2):
+#         for l in range(len(extend), 2):
+#             if (tag[x + extend[l], y + extend[l + 1]] != transition and raws[x + extend[l], y + extend[l + 1]] > th):
+#                 tag[x + extend[l], y + extend[l + 1]] = 255
+#                 find_next_edge(raws, x + extend[l], y + extend[l + 1], tag)
+
+
+
 transition = 1
 
 
-#
 def extend_edge(raws, th):
     tag = np.zeros((raws.shape[0], raws.shape[1]))
     for i in range(1, raws.shape[0] - 1):
         for j in range(1, raws.shape[1] - 1):
-            if (raws[i, j] > th and tag[i, j] != transition):
+            if ( abs(raws[i, j]) > th and tag[i, j] != transition):
                 tag[i, j] = 255
                 find_next_edge(raws, i, j, th, tag)
     return tag
 
 
 def find_next_edge(raws, x, y, th, tag):
-    pos = []
+    pos_positive = []
+    pos_negative = []
     extend = []
-    for k in range(8):
-        pos.append(raws[x + xxx[k], y + yyy[k]])
+    pos_x = 0
+    pos_y = 0
+    neg_x = 0
+    neg_y = 0
     for k in range(8):
         if (x == 0 or x == raws.shape[0] or y == 0 or y == raws.shape[1]):
             return
-        elif (raws[x + xxx[k], y + yyy[k]] == max(pos) and tag[x + xxx[k], y + yyy[k]] != 255):
-            extend.append(xxx[k])
-            extend.append(yyy[k])
-        elif (tag[x + xxx[k], y + yyy[k]] != 255):
-            tag[x + xxx[k], y + yyy[k]] = transition
+        if(tag[x + xxx[k], y + yyy[k]] != transition):
+            if(raws[x + xxx[k], y + yyy[k]] > 0):
+                pos_positive.append(raws[x + xxx[k], y + yyy[k]])
+            else:
+                pos_negative.append(raws[x + xxx[k], y + yyy[k]])
+
+    for k in range(8):
+        if (x == 0 or x == raws.shape[0] or y == 0 or y == raws.shape[1] ):
+            return
+        if(   len(pos_positive) > 0 and raws[x + xxx[k], y + yyy[k]] == max(pos_positive)):
+            pos_x = xxx[k]
+            pos_y = yyy[k]
+        elif( len(pos_negative) > 0 and raws[x + xxx[k], y + yyy[k]] == min(pos_negative)):
+            neg_x = xxx[k]
+            neg_y = yyy[k]
+        # else:
+        #     tag[x + xxx[k], y + yyy[k]] = transition
+
+    if(abs(pos_x-neg_x)<=1 and abs(pos_y-neg_y)<=1 ):
+        extend.append(pos_x)
+        extend.append(pos_y)
+        extend.append(neg_x)
+        extend.append(neg_y)
+    # else:
+    #     tag[x + pos_x, y + pos_y] = transition
+    #     tag[x + neg_x, y + neg_y] = transition
+
     if (len(extend) >= 2):
         for l in range(len(extend), 2):
-            if (tag[x + extend[l], y + extend[l + 1]] != transition and raws[x + extend[l], y + extend[l + 1]] > th):
+            if (tag[x + extend[l], y + extend[l + 1]] != transition and abs(raws[x + extend[l], y + extend[l + 1]]) > th):
                 tag[x + extend[l], y + extend[l + 1]] = 255
                 find_next_edge(raws, x + extend[l], y + extend[l + 1], tag)
+
+
+# def extend_edge(raws, th):
+#     tag = np.zeros((raws.shape[0], raws.shape[1]))
+#
+#     for x in range(1, raws.shape[0] - 1):
+#         for y in range(1, raws.shape[1] - 1):
+#
+#             if(abs(raws[x,y]) > th):
+#                 pos_positive = []
+#                 pos_negative = []
+#                 extend = []
+#                 pos_x = 0
+#                 pos_y = 0
+#                 neg_x = 0
+#                 neg_y = 0
+#                 for k in range(8):
+#                     if (x == 0 or x == raws.shape[0] or y == 0 or y == raws.shape[1]):
+#                         return
+#                     if (raws[x + xxx[k], y + yyy[k]] > 0 and):
+#                         pos_positive.append(raws[x + xxx[k], y + yyy[k]])
+#                     else:
+#                         pos_negative.append(raws[x + xxx[k], y + yyy[k]])
+#
+#                 for k in range(8):
+#                     if (x == 0 or x == raws.shape[0] or y == 0 or y == raws.shape[1]):
+#                         return
+#                     if (len(pos_positive) > 0 and raws[x + xxx[k], y + yyy[k]] == max(pos_positive)):
+#                         pos_x = xxx[k]
+#                         pos_y = yyy[k]
+#                     elif (len(pos_negative) > 0 and raws[x + xxx[k], y + yyy[k]] == min(pos_negative)):
+#                         neg_x = xxx[k]
+#                         neg_y = yyy[k]
+#                     else:
+#                         tag[x + xxx[k], y + yyy[k]] = transition
+#
+#                 if (abs(pos_x - neg_x) <= 1 and abs(pos_y - neg_y) <= 1 and raws[x + pos_x, y + pos_y]>th and abs(raws[x + neg_x, y + neg_y]) > th ):
+#                     extend.append(pos_x)
+#                     extend.append(pos_y)
+#                     extend.append(neg_x)
+#                     extend.append(neg_y)
+#                     tag[x + pos_x, y + pos_y] = 255
+#                     tag[x + neg_x, y + neg_y] = 255
+#                 else:
+#                     tag[x + pos_x, y + pos_y] = transition
+#                     tag[x + neg_x, y + neg_y] = transition
+#     return  tag
