@@ -7,15 +7,16 @@ gray = np.array([[10, 10, 10, 10], [10, 10, 11, 10], [10, 12, 5, 10], [10, 10, 1
 path = "D:\\experiment\\pic\\"
 # path = ""
 # src = "Solid"
-# src = "8068"  # 天鹅
+src = "8068"  # 天鹅
 # src = "41004"  # 牛
-src = "368037"  # 三个人
+# src = "368037"  # 三个人
 
 
 raw = cv2.imread(path + src + ".jpg")
 raw2 = cv2.cvtColor(raw, cv2.COLOR_BGR2GRAY)
 rows = raw2.shape
-np.savetxt('原图'+src+'.csv', raw2, fmt="%d", delimiter=',')
+np.savetxt('原图灰度图'+src+'.csv', raw2, fmt="%d", delimiter=',')
+cv2.imwrite("gray" + src + ".jpg", raw2)
 
 # 原始的方法,大区域的最小值与小区域中的最大值进行相减
 # re = change.gradient(raw2, rows[0], rows[1])
