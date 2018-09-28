@@ -319,38 +319,60 @@ def gradient_average(raws, x, y):
             noise, a, b = modify.point_classification(raws, i, j, 1)
             # print(a)
             # print(b)
-            # point_a = []
-            # point_b = []
+            point_a = []
+            point_b = []
 
             sum_a = 0
             num_a = 0
             sum_b = 0
             num_b = 0
-            min_a = 255
+            min_a = 255  # 获取中心点离两个区间的的最近差值
             min_b = 255
             for k in range(len(a)):
-                # point_a.append(raws[i + a[k][0] - 1, j + a[k][1] - 1])
-                # point_a.append(raws[a[k][0] - 1, a[k][1] - 1])
+                # point_a.append(raws[i + a[k][0] - 1, j + a[k][1] - 1])  //  这里使用的相对地址,但是前面的函数传入的是绝对地址
+                point_a.append(raws[a[k][0], a[k][1]])
                 # sum_a += raws[a[k][0] - 1, a[k][1] - 1]
                 sum_a += raws[a[k][0], a[k][1]]
                 num_a += 1
 
             for k in range(len(b)):
                 # point_b.append(raws[i + b[k][0] - 1, j + b[k][1] - 1])
-                # point_b.append(raws[b[k][0] - 1, b[k][1] - 1])
+                point_b.append(raws[b[k][0], b[k][1]])
                 # sum_b += raws[b[k][0] - 1, b[k][1] - 1]
                 sum_b += raws[b[k][0], b[k][1]]
                 num_b += 1
-            # maxa = max(point_a)
-            # maxb = max(point_b)
-            # mina = min(point_a)
-            # minb = min(point_b)
-            # if (mina > maxb):
-            #     re[i, j] = mina - maxb
-            # elif (minb > maxa):
-            #     re[i, j] = minb - maxa
-            # else:
-            #     re[i, j] = 0
+            maxa = max(point_a)  # 两个区域的的四个极值
+            maxb = max(point_b)
+            mina = min(point_a)
+            minb = min(point_b)
+            if (maxa >= maxb and mina <= maxb):
+                re[i, j] = 0
+            elif (maxb >= maxa and minb <= maxa):
+                re[i, j] = 0
+            else:
+                avg_a = sum_a / num_a
+                avg_b = sum_b / num_b
+                if (abs(raws[i, j] - avg_a) > abs(raws[i, j] - avg_b)):
+                    # if (avg_a > avg_b):
+                    re[i, j] = avg_b - avg_a
+                    # if (i == 73 and j == 253):
+                    #     print(a)
+                    #     print(avg_a)
+                    #     print(b)
+                    #     print(avg_b)
+                # else:
+                #     re[i,j] = avg_b - avg_a
+                if (abs(raws[i, j] - avg_a) < abs(raws[i, j] - avg_b)):
+                    # if (avg_a > avg_b):
+                    re[i, j] = avg_a - avg_b
+                    # if (i == 73 and j == 253):
+                    #     print(a)
+                    #     print(avg_a)
+                    #     print(b)
+                    #     print(avg_b)
+                # else:
+                #     re[i,j] = avg_a - avg_b
+
             # for k in range(len(a)):
             #     temp = abs(raws[i, j] - raws[a[k][0] - 1, a[k][1] - 1])
             #     if (min_a > temp):
@@ -375,19 +397,6 @@ def gradient_average(raws, x, y):
             # if( abs(sum_a / num_a - sum_b / num_b) >5):
             #     re[i, j] = abs(sum_a - sum_b)
 
-            avg_a = sum_a / num_a
-            avg_b = sum_b / num_b
-            if (abs(raws[i, j] - avg_a) > abs(raws[i, j] - avg_b)):
-                # if (avg_a > avg_b):
-                    re[i, j] = avg_b - avg_a
-                # else:
-                #     re[i,j] = avg_b - avg_a
-            if (abs(raws[i, j] - avg_a) < abs(raws[i, j] - avg_b)):
-                # if (avg_a > avg_b):
-                    re[i, j] = avg_a - avg_b
-                # else:
-                #     re[i,j] = avg_a - avg_b
-
             # re[i,j] = abs(avg_a-avg_b)
     return re
 
@@ -396,7 +405,7 @@ def gradient_average_abs(raws, x, y):
     re = np.zeros((x, y))
     for i in range(1, x - 1):
         for j in range(1, y - 1):
-            noise, a, b = modify.point_classification(raws, i, j, 1)
+            noise, a, b = modify.point_classification(raws, i, j, 2)
             # print(a)
             # print(b)
             # point_a = []
@@ -423,7 +432,6 @@ def gradient_average_abs(raws, x, y):
                 num_b += 1
             re[i, j] = abs(sum_a / num_a - sum_b / num_b)
     return re
-
 
 
 xx_tag = [-1, -1, -1, 0, +1, +1, +1, 0, 0]
@@ -484,7 +492,6 @@ def gradient_tag(raws, x, y):
 #                 find_next_edge(raws, x + extend[l], y + extend[l + 1], tag)
 
 
-
 transition = 1
 
 
@@ -492,7 +499,7 @@ def extend_edge(raws, th):
     tag = np.zeros((raws.shape[0], raws.shape[1]))
     for i in range(1, raws.shape[0] - 1):
         for j in range(1, raws.shape[1] - 1):
-            if ( abs(raws[i, j]) > th and tag[i, j] != transition):
+            if (abs(raws[i, j]) > th and tag[i, j] != transition):
                 tag[i, j] = 255
                 find_next_edge(raws, i, j, th, tag)
     return tag
@@ -509,25 +516,25 @@ def find_next_edge(raws, x, y, th, tag):
     for k in range(8):
         if (x == 0 or x == raws.shape[0] or y == 0 or y == raws.shape[1]):
             return
-        if(tag[x + xxx[k], y + yyy[k]] != transition):
-            if(raws[x + xxx[k], y + yyy[k]] > 0):
+        if (tag[x + xxx[k], y + yyy[k]] != transition):
+            if (raws[x + xxx[k], y + yyy[k]] > 0):
                 pos_positive.append(raws[x + xxx[k], y + yyy[k]])
             else:
                 pos_negative.append(raws[x + xxx[k], y + yyy[k]])
 
     for k in range(8):
-        if (x == 0 or x == raws.shape[0] or y == 0 or y == raws.shape[1] ):
+        if (x == 0 or x == raws.shape[0] or y == 0 or y == raws.shape[1]):
             return
-        if(   len(pos_positive) > 0 and raws[x + xxx[k], y + yyy[k]] == max(pos_positive)):
+        if (len(pos_positive) > 0 and raws[x + xxx[k], y + yyy[k]] == max(pos_positive)):
             pos_x = xxx[k]
             pos_y = yyy[k]
-        elif( len(pos_negative) > 0 and raws[x + xxx[k], y + yyy[k]] == min(pos_negative)):
+        elif (len(pos_negative) > 0 and raws[x + xxx[k], y + yyy[k]] == min(pos_negative)):
             neg_x = xxx[k]
             neg_y = yyy[k]
         # else:
         #     tag[x + xxx[k], y + yyy[k]] = transition
 
-    if(abs(pos_x-neg_x)<=1 and abs(pos_y-neg_y)<=1 ):
+    if (abs(pos_x - neg_x) <= 1 and abs(pos_y - neg_y) <= 1):
         extend.append(pos_x)
         extend.append(pos_y)
         extend.append(neg_x)
@@ -538,7 +545,8 @@ def find_next_edge(raws, x, y, th, tag):
 
     if (len(extend) >= 2):
         for l in range(len(extend), 2):
-            if (tag[x + extend[l], y + extend[l + 1]] != transition and abs(raws[x + extend[l], y + extend[l + 1]]) > th):
+            if (tag[x + extend[l], y + extend[l + 1]] != transition and abs(
+                    raws[x + extend[l], y + extend[l + 1]]) > th):
                 tag[x + extend[l], y + extend[l + 1]] = 255
                 find_next_edge(raws, x + extend[l], y + extend[l + 1], tag)
 
@@ -588,3 +596,31 @@ def find_next_edge(raws, x, y, th, tag):
 #                     tag[x + pos_x, y + pos_y] = transition
 #                     tag[x + neg_x, y + neg_y] = transition
 #     return  tag
+
+marchX = [0, 0, 1, 1, 0]
+marchY = [0, 1, 1, 0, 0]
+
+
+def marching_squares(src):
+    re = np.zeros((src.shape[0] * 2, src.shape[1] * 2))
+    vector_re = []
+    for x in range(src.shape[0] - 1):
+        for y in range(src.shape[1] - 1):
+            for k in range(len(marchX) - 1):
+                if ((src[x + marchX[k], y + marchY[k]] * src[x + marchX[k + 1], y + marchY[k + 1]]) < 0):
+                    vector_re.append(x + (marchX[k] + marchX[k + 1]) / 2)
+                    vector_re.append(y + (marchY[k] + marchY[k + 1]) / 2)
+                    re[2 * x + (marchX[k] + marchX[k + 1]), 2 * y + (marchY[k] + marchY[k + 1])] = 255
+    return re, vector_re
+
+
+def marching_filter(src, th):
+    re = np.zeros((src.shape[0], src.shape[1]))
+    for x in range(src.shape[0]):
+        for y in range(src.shape[1]):
+            if (abs(src[x, y]) > th):
+                if (src[x, y] > 0):
+                    re[x, y] = 1
+                elif (src[x, y] < 0):
+                    re[x, y] = -1
+    return re
