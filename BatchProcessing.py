@@ -2,12 +2,16 @@ import os
 import numpy as np
 import cv2
 import change
+import marchingsquares1
+import marchingsquares
+import marchingsquares2
 import matplotlib.pyplot as plt
+import config
 
 inpath = "D:\\in\\"
 outpath = "D:\\out\\"
-threshold = 10
-threshold_march = 7
+threshold = 10  ##  change.extend_edge
+threshold_march = config.threshold_march
 
 files = os.listdir(inpath)
 for file in files:
@@ -17,6 +21,8 @@ for file in files:
 
     src = file
     raw = cv2.imread(inpath + src + ".jpg")
+    # raw2 = cv2.cvtColor(raw, cv2.COLOR_BGR2GRAY)
+
     raw_Filter = cv2.bilateralFilter(raw, 7, 50, 50)
     cv2.imwrite(outpath + src + "__srcBil" + ".jpg", raw_Filter)
     raw = raw_Filter
@@ -25,9 +31,9 @@ for file in files:
     cv2.imwrite(outpath + src + "_grayBil" + ".jpg", raw2_Filter)
     np.savetxt(outpath + src + '__grayBil' + '.csv', raw2_Filter, fmt="%d", delimiter=',')
     raw2 = raw2_Filter
+
     # canny=cv2.Canny(raw,100,200)
     # cv2.imwrite(outpath + src + "__Canny" + ".jpg", canny)
-
 
     rows = raw2.shape
     # np.savetxt(outpath + src + '__原图灰度图' + '.csv', raw2, fmt="%d", delimiter=',')
@@ -41,27 +47,50 @@ for file in files:
     # np.savetxt(outpath + src + "__gradien_bil" + ".csv", re1, fmt="%d", delimiter=',')
     # re = re1
 
-    edge = change.extend_edge(re, threshold)
-    cv2.imwrite(outpath + src + "___" + str(threshold) + "edge_" + ".jpg", edge)
-    np.savetxt(outpath + src + "___" + str(threshold) + "edge_" + ".csv", edge, fmt="%d", delimiter=',')
+    # edge = change.extend_edge(re, threshold)
+    # cv2.imwrite(outpath + src + "___" + str(threshold) + "edge_" + ".jpg", edge)
+    # np.savetxt(outpath + src + "___" + str(threshold) + "edge_" + ".csv", edge, fmt="%d", delimiter=',')
 
-    marching_filter = change.marching_filter(re, threshold_march)
-    np.savetxt(outpath + src + "___" + str(threshold_march) + "__marching_" + ".csv", marching_filter, fmt="%d",
-               delimiter=',')
-    marching_re, vector_re = change.marching_squares(marching_filter)
-    cv2.imwrite(outpath + src + "___" + str(threshold_march) + "__marching_" + ".jpg", marching_re)
-    np.savetxt(outpath + src + "___" + str(threshold_march) + "__marching_" + ".csv", marching_re, fmt="%d",
-               delimiter=',')
-    # # print(vector_re)
-    # # for x in range(len(vector_re), 4):
-    # #     plt.plot([vector_re[x], vector_re[x + 2]], [vector_re[x + 1], vector_re[x + 3]])
-    # #     print(vector_re[x])
-    # #     print(vector_re[x+1])
-    # #     print(vector_re[x+2])
-    # #     print(vector_re[x+3])
-    # # plt.show()
+    # re = change.absabs(re)
+    # cv2.imwrite(outpath + src + "__abs" + ".jpg", re)
+    # np.savetxt(outpath + src + "__abs__" + ".csv", re, fmt="%d", delimiter=',')
+    # reabs = cv2.imread(outpath + src + "__abs" + ".jpg")
+    # regray = cv2.cvtColor(reabs, cv2.COLOR_BGR2GRAY)
+    # np.savetxt(outpath + src + "__regray__" + ".csv", re, fmt="%d", delimiter=',')
+    # ret2, th2 = cv2.threshold(regray, 0, 255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+    # print(ret2)
+    # print(type(re))
+    # print(type(raw2))
+
+    # marching_filter = change.marching_filter(re, threshold_march)
+    # np.savetxt(outpath + src + "___" + str(threshold_march) + "__marching_" + ".csv", marching_filter, fmt="%d",
+    #            delimiter=',')
+
+    # change.traverse(change.marching_filter(re, threshold_march))
+
+    marchingsquares2.traverse(marchingsquares2.labels_matrix(re,10), "" + src)
+
+    print("over")
+    # marching_re, vector_re = change.marching_squares(marching_filter)
+    # cv2.imwrite(outpath + src + "___" + str(threshold_march) + "__marching_filter_" + ".jpg", marching_re)
+    # np.savetxt(outpath + src + "___" + str(threshold_march) + "__marching_filter_" + ".csv", marching_re, fmt="%d",
+    #            delimiter=',')
     #
-    #
-    # # plt.plot([5, 10], [6, 20])
-    # # plt.plot([1, 2], [3, 4])
-    # # plt.show()
+    # extend = change.extend_double(marching_filter, re)
+    # np.savetxt(outpath + src + "___" + str(threshold_march) + "__extend_" + ".csv", extend, fmt="%d",
+    #            delimiter=',')
+    # change.traverse(extend)
+
+    # extend_re, vector_extend = change.marching_squares(extend)
+    # cv2.imwrite(outpath + src + "___" + str(threshold_march) + "__extend_double" + ".jpg", extend_re)
+    # np.savetxt(outpath + src + "___" + str(threshold_march) + "__extend_double_" + ".csv", extend_re, fmt="%d",
+    #            delimiter=',')
+
+    # print(vector_re)
+    # for x in range(len(vector_re), 4):
+    #     plt.plot([vector_re[x], vector_re[x + 2]], [vector_re[x + 1], vector_re[x + 3]])
+    #     print(vector_re[x])
+    #     print(vector_re[x+1])
+    #     print(vector_re[x+2])
+    #     print(vector_re[x+3])
+    # plt.show()
