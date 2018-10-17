@@ -7,6 +7,7 @@ import marchingsquares
 import marchingsquares2
 import matplotlib.pyplot as plt
 import config
+import MyMarchingSquares
 
 inpath = "D:\\in\\"
 outpath = "D:\\out\\"
@@ -68,14 +69,14 @@ for file in files:
 
     # change.traverse(change.marching_filter(re, threshold_march))
 
-    marchingsquares2.traverse(marchingsquares2.labels_matrix(re,10), "" + src)
+    # marchingsquares2.traverse(marchingsquares2.labels_matrix(re,10), "" + src)
 
-    print("over")
+    # print("over")
     # marching_re, vector_re = change.marching_squares(marching_filter)
     # cv2.imwrite(outpath + src + "___" + str(threshold_march) + "__marching_filter_" + ".jpg", marching_re)
     # np.savetxt(outpath + src + "___" + str(threshold_march) + "__marching_filter_" + ".csv", marching_re, fmt="%d",
     #            delimiter=',')
-    #
+    # #
     # extend = change.extend_double(marching_filter, re)
     # np.savetxt(outpath + src + "___" + str(threshold_march) + "__extend_" + ".csv", extend, fmt="%d",
     #            delimiter=',')
@@ -87,10 +88,21 @@ for file in files:
     #            delimiter=',')
 
     # print(vector_re)
-    # for x in range(len(vector_re), 4):
-    #     plt.plot([vector_re[x], vector_re[x + 2]], [vector_re[x + 1], vector_re[x + 3]])
-    #     print(vector_re[x])
-    #     print(vector_re[x+1])
-    #     print(vector_re[x+2])
-    #     print(vector_re[x+3])
+    # for x in range(0,len(vector_re), 4):
+    #     plt.plot( [vector_re[x + 1], vector_re[x + 3]] ,[vector_re[x], vector_re[x + 2]],  color='black', lw=0.1)
+    # print(vector_re[x])
+    # print(vector_re[x+1])
+    # print(vector_re[x+2])
+    # print(vector_re[x+3])
+    # ax = plt.gca()
+    # ax.invert_yaxis()  # y轴反向
+    # plt.xticks([])
+    # plt.yticks([])
+    # plt.axis('off')
     # plt.show()
+
+    x, y = MyMarchingSquares.traverse(MyMarchingSquares.labels_matrix(re, 10))
+    print()
+    for i in range(0, len(x), 2):
+        plt.plot([x[i], y[i]], [x[i + 1], y[i + 1]], color='black', lw=0.1)
+    plt.show()

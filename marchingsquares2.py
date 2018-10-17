@@ -73,6 +73,7 @@ def get_squares(matrix, x, y):
 
 # 根据两个点找到下一个square（跟踪）
 # 参数：矩阵,两个点在四个点中的序号，两个点的坐标
+# return 四边形的四个点的值,以及四个点的坐标,以及这个线段在下一个四边形的边的序号
 def find_next_sq(matrix, aindex, bindex, ax, ay, bx, by):
     i, j = matrix.shape
     aindex = int(aindex)
