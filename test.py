@@ -12,7 +12,8 @@ path1 = "D:\\out\\4.csv"
 src = "8068"  # 天鹅
 
 re = np.loadtxt(path1, dtype=np.int, delimiter=",")
-x, y = MyMarchingSquares.traverse(MyMarchingSquares.labels_matrix(re, 1))
+# x, y = MyMarchingSquares.traverse(re)
+x, y = MyMarchingSquares.traverse1(MyMarchingSquares.labels_matrix(re, 40))
 print(x)
 print(y)
 for i in range(0, len(x), 2):
