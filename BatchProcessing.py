@@ -6,13 +6,13 @@ import marchingsquares1
 import marchingsquares
 import marchingsquares2
 import matplotlib.pyplot as plt
-import config
 import MyMarchingSquares
+import modify
 
 inpath = "D:\\in\\"
 outpath = "D:\\out\\"
 threshold = 10  ##  change.extend_edge
-threshold_march = config.threshold_march
+threshold_march = 20
 
 files = os.listdir(inpath)
 for file in files:
@@ -26,6 +26,7 @@ for file in files:
 
     raw_Filter = cv2.bilateralFilter(raw, 7, 50, 50)
     cv2.imwrite(outpath + src + "__srcBil" + ".jpg", raw_Filter)
+
     raw = raw_Filter
     raw2 = cv2.cvtColor(raw_Filter, cv2.COLOR_BGR2GRAY)
     raw2_Filter = cv2.bilateralFilter(raw2, 7, 50, 50)
@@ -36,11 +37,18 @@ for file in files:
     # canny=cv2.Canny(raw,100,200)
     # cv2.imwrite(outpath + src + "__Canny" + ".jpg", canny)
 
+    # noise_num = 1
+    # a, b, c, d, e = modify.noise_array(raw2, noise_num)
+    # np.savetxt("D:\\noise\\noise.csv", a, fmt="%d", delimiter=',')
+    #
+    # raw3 = change.fix_noise(raw2, a, 1)
+
     rows = raw2.shape
     # np.savetxt(outpath + src + '__原图灰度图' + '.csv', raw2, fmt="%d", delimiter=',')
     # cv2.imwrite(outpath + src + "__gray" + ".jpg", raw2)
 
-    re = change.gradient_average(raw2, rows[0], rows[1])
+    # re = change.gradient_average_new(raw2, rows[0], rows[1], 1)
+    re = change.gradient_average(raw2, rows[0], rows[1], 1)
     re[0, :] = re[rows[0] - 1, :] = re[:, 0] = re[:, rows[1] - 1] = 0
     np.savetxt(outpath + src + "__gradien" + ".csv", re, fmt="%d", delimiter=',')
 
@@ -101,8 +109,45 @@ for file in files:
     # plt.axis('off')
     # plt.show()
 
-    x, y = MyMarchingSquares.traverse(MyMarchingSquares.labels_matrix(re, 10))
-    print()
+    # x, y = MyMarchingSquares.traverse(MyMarchingSquares.labels_matrix(re, threshold_march))
+    # for i in range(0, len(x), 2):
+    #     plt.plot([y[i], y[i + 1]], [x[i], x[i + 1]], color='black', lw=0.1)
+    # ax = plt.gca()
+    # ax.invert_yaxis()  # y轴反向
+    # plt.xticks([])
+    # plt.yticks([])
+    # plt.axis('off')
+    # plt.savefig("D:\\20\\"+src+"___"+str(threshold_march), dpi=500)  # 指定分辨率保存
+    # plt.show()
+
+    x, y = MyMarchingSquares.traverse(MyMarchingSquares.labels_matrix(re, threshold_march))
+
+    length = re.shape[0]
+    width = re.shape[1]
+    while length > 10 or width > 10:
+        length /= 10
+        width /= 10
+
+    plt.xticks([])
+    plt.yticks([])
+    plt.figure(figsize=(width, length), dpi=500)
+    plt.gca().invert_yaxis()  # y轴反向
+    plt.axis('off')
+
     for i in range(0, len(x), 2):
-        plt.plot([x[i], y[i]], [x[i + 1], y[i + 1]], color='black', lw=0.1)
+        plt.plot([y[i], y[i + 1]], [x[i], x[i + 1]], color='white', lw=0.5)
+
+    plt.savefig("D:\\20\\" + src + "___" + str(threshold_march), figsize=(width, length), facecolor='black',
+                dpi=500)  # 指定分辨率保存
+    #  plt.savefig("D:\\test", figsize=(3, 8), dpi=500)  # 指定分辨率保存
+    # plt.savefig("D:\\test", dpi=500)  # 指定分辨率保存
+    # plt.savefig("D:\\test", figsize=(re.shape[1]/100, re.shape[0]/100),facecolor='black', dpi=500)  # 指定分辨率保存
     plt.show()
+
+    # ax.invert_yaxis()  # y轴反向
+    # plt.xticks([])
+    # plt.yticks([])
+    # plt.axis('off')
+    # plt.savefig("D:\\20\\" + src + "___" + str(threshold_march), figsize=(width, length), facecolor='black',
+    #             dpi=500)  # 指定分辨率保存
+    # plt.show()

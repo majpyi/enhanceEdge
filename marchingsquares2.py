@@ -8,7 +8,6 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 from pylab import *
-import config
 
 
 
@@ -385,5 +384,5 @@ def traverse(matrix,src):
     plt.xticks([])
     plt.yticks([])
     plt.axis('off')
-    plt.savefig("D:\\"+str(src), dpi=500)  # 指定分辨率保存
+    plt.savefig("D:\\"+str(src)+"test", dpi=500)  # 指定分辨率保存
     plt.show()

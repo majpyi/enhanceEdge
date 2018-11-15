@@ -318,12 +318,11 @@ def gradient(raws, x, y):
 
 
 # 在根据最小能量的方法去掉一个最大概率矛盾点的情况下,再按照两个区域的均值差,得到区分度值
-def gradient_average(raws, x, y):
+def gradient_average(raws, x, y, noise_num):
     re = np.zeros((x, y))
     for i in range(1, x - 1):
         for j in range(1, y - 1):
-            noise, a, b = modify.point_classification(raws, i, j, 1)
-            # print(a)
+            noise, a, b = modify.point_classification_new(raws, i, j, noise_num)  # 在八邻域中找到一个矛盾点剩余部分划分为两个部分
             # print(b)
             point_a = []
             point_b = []
@@ -361,21 +360,21 @@ def gradient_average(raws, x, y):
                 if (abs(raws[i, j] - avg_a) > abs(raws[i, j] - avg_b)):
                     # if (avg_a > avg_b):
                     re[i, j] = avg_b - avg_a
-                    # if (i == 73 and j == 253):
-                    #     print(a)
-                    #     print(avg_a)
-                    #     print(b)
-                    #     print(avg_b)
+                    if (i == 87 and j == 205):
+                        print(a)
+                        print(avg_a)
+                        print(b)
+                        print(avg_b)
                 # else:
                 #     re[i,j] = avg_b - avg_a
                 if (abs(raws[i, j] - avg_a) < abs(raws[i, j] - avg_b)):
                     # if (avg_a > avg_b):
                     re[i, j] = avg_a - avg_b
-                    # if (i == 73 and j == 253):
-                    #     print(a)
-                    #     print(avg_a)
-                    #     print(b)
-                    #     print(avg_b)
+                    if (i == 87 and j == 205):
+                        print(a)
+                        print(avg_a)
+                        print(b)
+                        print(avg_b)
                 # else:
                 #     re[i,j] = avg_a - avg_b
 
@@ -404,6 +403,75 @@ def gradient_average(raws, x, y):
             #     re[i, j] = abs(sum_a - sum_b)
 
             # re[i,j] = abs(avg_a-avg_b)
+    return re
+
+
+# 在根据最小能量的方法去掉一个最大概率矛盾点的情况下,再按照两个区域的均值差,得到区分度值
+def gradient_average_new(raws, x, y, noise_num):
+    re = np.zeros((x, y))
+    for i in range(1, x - 1):
+        for j in range(1, y - 1):
+            noise, a, b = modify.point_classification_new(raws, i, j, noise_num)  # 在八邻域中找到一个矛盾点剩余部分划分为两个部分
+            # print(b)
+            point_a = []
+            point_b = []
+
+            sum_a = 0
+            num_a = 0
+            sum_b = 0
+            num_b = 0
+            min_a = 255  # 获取中心点离两个区间的的最近差值
+            min_b = 255
+            for k in range(len(a)):
+                # point_a.append(raws[i + a[k][0] - 1, j + a[k][1] - 1])  //  这里使用的相对地址,但是前面的函数传入的是绝对地址
+                point_a.append(raws[a[k][0], a[k][1]])
+                # sum_a += raws[a[k][0] - 1, a[k][1] - 1]
+                sum_a += raws[a[k][0], a[k][1]]
+                num_a += 1
+
+            for k in range(len(b)):
+                # point_b.append(raws[i + b[k][0] - 1, j + b[k][1] - 1])
+                point_b.append(raws[b[k][0], b[k][1]])
+                # sum_b += raws[b[k][0] - 1, b[k][1] - 1]
+                sum_b += raws[b[k][0], b[k][1]]
+                num_b += 1
+            maxa = max(point_a)  # 两个区域的的四个极值
+            maxb = max(point_b)
+            mina = min(point_a)
+            minb = min(point_b)
+            if maxa >= maxb >= mina:
+                avg_a = sum_a / num_a
+                avg_b = sum_b / num_b
+                if (abs(raws[i, j] - avg_a) > abs(raws[i, j] - avg_b)):
+                    # if (avg_a > avg_b):
+                    re[i, j] = avg_b - avg_a
+                # else:
+                #     re[i,j] = avg_b - avg_a
+                if (abs(raws[i, j] - avg_a) < abs(raws[i, j] - avg_b)):
+                    # if (avg_a > avg_b):
+                    re[i, j] = avg_a - avg_b
+            elif maxb >= maxa >= minb:
+                avg_a = sum_a / num_a
+                avg_b = sum_b / num_b
+                if (abs(raws[i, j] - avg_a) > abs(raws[i, j] - avg_b)):
+                    # if (avg_a > avg_b):
+                    re[i, j] = avg_b - avg_a
+                # else:
+                #     re[i,j] = avg_b - avg_a
+                if (abs(raws[i, j] - avg_a) < abs(raws[i, j] - avg_b)):
+                    # if (avg_a > avg_b):
+                    re[i, j] = avg_a - avg_b
+            else:
+                avg_a = sum_a / num_a
+                avg_b = sum_b / num_b
+                if (abs(raws[i, j] - avg_a) > abs(raws[i, j] - avg_b)):
+                    # if (avg_a > avg_b):
+                    re[i, j] = avg_b - avg_a
+                # else:
+                #     re[i,j] = avg_b - avg_a
+                if (abs(raws[i, j] - avg_a) < abs(raws[i, j] - avg_b)):
+                    # if (avg_a > avg_b):
+                    re[i, j] = avg_a - avg_b
     return re
 
 
@@ -885,3 +953,105 @@ def absabs(re):
             if (re[i, j] < 0):
                 re[i, j] = abs(re[i, j])
     return re
+
+
+# 从右上角开始,逆时针旋转
+# xxx = [-1, -1, -1, 0, +1, +1, +1, 0]
+# yyy = [+1, 0, -1, -1, -1, 0, +1, +1]
+def fix_noise(src1, tag, noise_num):
+    src = src1.copy()
+    for i in range(tag.shape[0]):
+        for j in range(tag.shape[1]):
+            if tag[i, j] > 1:
+                a_sum = 0
+                a_num = 0
+                b_sum = 0
+                b_num = 0
+                minn, a, b = modify.point_classification_new(src1, i, j, 1)
+                for aa in a:
+                    # if tag[aa[0], aa[1]] == 0:
+                    if tag[aa[0], aa[1]] <= noise_num:
+                        a_sum += src[aa[0], aa[1]]
+                        a_num += 1
+                for bb in b:
+                    # if tag[bb[0], bb[1]] == 0:
+                    if tag[bb[0], bb[1]] <= noise_num:
+                        b_sum += src[bb[0], bb[1]]
+                        b_num += 1
+                if b_num > 0 and a_num > 0:
+                    if abs(src[i, j] - a_sum / a_num) > abs(src[i, j] - b_sum / b_num):
+                        src[i, j] = b_sum / b_num
+                    else:
+                        src[i, j] = a_sum / a_num
+                if (i == 7 and j == 72 and b_num != 0):
+                    print(b_sum / b_num)
+                if (i == 7 and j == 72 and a_num != 0):
+                    print(a_sum / a_num)
+                if (i == 7 and j == 72):
+                    print(b_num)
+                    print(a_num)
+                    print(b_sum)
+                    print(a_sum)
+    return src
+
+
+#  高权重区域代表上下左右四个像素值
+# hx = [-1, 0, 0, +1]
+# hy = [0, -1, +1, 0]
+def transition_area(src, tag):
+    flag_t = 0
+    for i in range(1, src.shape[0] - 1):
+        for j in range(1, src.shape[1] - 1):
+            tag1 = 0
+            tag2 = 0
+            list_neg = []
+            list_pos = []
+            if tag[i, j] == 0:
+                flag_t = 1
+                for x in range(4):
+                    if tag[i + hx[x], j + hy[x]] == 1:
+                        tag1 = 1
+                        list_pos.append(src[i + hx[x], j + hy[x]])
+                    if tag[i + hx[x], j + hy[x]] == -1:
+                        tag2 = 1
+                        list_neg.append(src[i + hx[x], j + hy[x]])
+                if tag1 == 1 and tag2 == 1:
+                    src[i, j] = sum(list_neg) / len(list_neg)
+                    tag[i, j] = -2
+                elif tag1 == 1 and tag2 == 0:
+                    src[i, j] = sum(list_pos) / len(list_pos)
+                    tag[i, j] = 2
+                elif tag1 == 0 and tag2 == 1:
+                    src[i, j] = sum(list_neg) / len(list_neg)
+                    tag[i, j] = -2
+    tag = for_next(tag)
+    if flag_t == 0:
+        print(src)
+        return src
+    elif flag_t == 1:
+        print(1)
+        transition_area(src, tag)
+        return src  # 很关键,如果不在这里加入返回,则得到的的src为None
+
+
+def for_next(tag):
+    for i in range(tag.shape[0]):
+        for j in range(tag.shape[1]):
+            if tag[i, j] == 2:
+                tag[i, j] = 1
+            elif tag[i, j] == -2:
+                tag[i, j] = -1
+    return tag
+
+
+def transition_tag(tag1, tag2):
+    for i in range(tag1.shape[0]):
+        for j in range(tag1.shape[1]):
+            if tag1[i, j] == 1:
+                tag1[i, j] = 0
+            elif tag1[i, j] == 0:
+                if tag2[i, j] < 0:
+                    tag1[i, j] = -1
+                else:
+                    tag1[i, j] = 1
+    return tag1

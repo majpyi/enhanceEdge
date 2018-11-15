@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def line_energy(p1, p2):
     return (p1 - p2) * (p1 - p2)
 
@@ -145,7 +148,7 @@ def find_noise(gray, i, j, num=8):
 
 
 # 每个八邻域内定位3个最有可能噪声点
-# 参数：灰度矩阵图，中心像素坐标
+# 参数：灰度矩阵图，中心像素坐标,假设八邻域中可能含有的噪声个数,3*3的八邻域或者是5*5的24邻域
 # 得到：三个噪声点，A,B区与中心像素的坐标
 def point_classification(gray, i, j, count, num=8):
     list_point = point_list(gray, i, j, num)[0]  # 初始的八邻域
@@ -207,3 +210,223 @@ def point_classification(gray, i, j, count, num=8):
                         ii = ii + 1
                 b.append(find_index(i, j, ii, num))
     return minn, a, b
+
+
+# 每个八邻域内定位3个最有可能噪声点
+# 参数：灰度矩阵图，中心像素坐标
+# 得到：三个噪声点，A,B区与中心像素的坐标
+def point_classification_new(gray, i, j, count, num=8):
+    global v_a, v_b, index_a, index_b
+    list_point = point_list(gray, i, j, num)[0]  # 初始的八邻域
+    e_point_1 = list_point[:]  # 副本
+    e_point = list_point[:]  # 副本
+    e_point.reverse()
+    point_lists = list_point[:]  # point_list作为副本，负责三次减去噪声
+    minn = []  # 获取定位到的噪声在gray中的坐标
+    rest_a = []  # 获取出3个噪声点外的a区点灰度值
+    rest_b = []  # 获取出3个噪声点外的b区点灰度值
+    a = []  # a区的index
+    b = []  # b区的index
+    noise = []  # 噪声的index
+    while (count > 0):  # 计数3次
+        energy_list = []  # 存储边的能量
+        # 获取一个噪声
+        for x in range(len(point_lists)):
+            li = point_lists[:]
+            lli = point_lists[:]
+            del li[x]
+            en, v_a, v_b, index_a, index_b = least_energy(li)
+            energy_list.append(en)
+        noise_index = energy_list.index(min(energy_list))  # 得到噪声的领域index
+        # print("noise_index", noise_index)
+        sorted_list = sorted(point_lists)
+        flag = 1  # 普通情况
+        #         if sum(energy_list) == 0:
+        #             if len(v_a)>len(v_b):
+        #                 noise_index = index_a[0]
+        #             elif len(v_a)<= len(v_b):
+        #                 noise_index = index_b[0]
+        if sum(energy_list) == 0:
+            if (len(v_a) > len(v_b)) & (len(v_b) >= 2):
+                noise_index = point_lists.index(v_a[0])
+                flag = 0  # eg:130 130 150 150 150 150 150 150的情况
+            elif (len(v_a) <= len(v_b)) & (len(v_a) >= 2):
+                noise_index = point_lists.index(v_b[0])
+                flag = 0
+            # elif (len(v_a) > len(v_b)) & (len(v_b) == 1):
+            #     noise_index = point_lists.index(v_b[0])
+            #     flag = 0  # eg:130 120 120 120 120 120 120 120的情况
+            # elif (len(v_b) > len(v_a)) & (len(v_a) == 1):
+            #     noise_index = point_lists.index(v_a[0])
+            #     flag = 0
+        # print(sum(energy_list), v_a, v_b, index_a, index_b, noise_index)
+        ori_noise_index = noise_index  # 当前列表中噪声点的index
+        for ii in noise:
+            # print('i=',i)
+            if noise_index >= ii:
+                noise_index = noise_index + 1  # 为了得到在原先（8、16）中的index
+            #                 print(noise_index)
+            else:
+                break
+        noise.append(noise_index)
+        # print("noise", noise)
+        noise.sort()
+        minn.append(find_index(i, j, noise_index, num))
+        if flag == 1:
+            # print("删掉的", point_lists[energy_list.index(min(energy_list))])
+            del point_lists[energy_list.index(min(energy_list))]  # 删去定位噪声，剩下的邻域为下一次定位噪声做准备
+        else:
+            # print("删掉的", point_lists[ori_noise_index])
+            del point_lists[ori_noise_index]
+        count = count - 1
+        if count == 0:
+            # print("剩下的非噪声点", point_lists)
+            least = least_energy(point_lists)
+            # print("least", least)
+            rest_a.extend(least[3])
+            rest_b.extend(least[4])
+            for ii in rest_a:
+                for iii in noise:
+                    if ii >= iii:
+                        ii = ii + 1
+                a.append(find_index(i, j, ii, num))
+            for ii in rest_b:
+                for iii in noise:
+                    if ii >= iii:
+                        ii = ii + 1
+                b.append(find_index(i, j, ii, num))
+    return minn, a, b
+
+
+####################################################################
+####################################################################10.19
+
+# 遍历灰度矩阵并计数标记，噪声点+0，内部点+1，小边点+10，大边点+100,num为邻域个数,count为每次取噪声个数
+def score(gray, count, num=8):
+    scores = np.zeros((gray.shape[0], gray.shape[1]))  # 初始化为0
+    total_noise = []
+    #     mark = [[[[]]*3]*width]*length
+    #     print(gray.shape[0])
+    for k in range(1, gray.shape[0] - 1):
+        for l in range(1, gray.shape[1] - 1):
+            #             print(i)
+            noise, a, b = point_classification(gray, k, l, count, num)  # 根据中心像素点得到八邻域中的噪声，a,b区坐标
+            #             print(a,b)
+            total_noise.extend(noise)
+            #             print(noise,a,b)
+            num_a = []
+            num_b = []
+            for i in a:
+                num_a.append(gray[i[0]][i[1]])
+            for i in b:
+                num_b.append(gray[i[0]][i[1]])
+            #             print(num_a,num_b)
+            #             if((len(num_b) == 0)|(len(num_a) == 0)):
+            #                 print('AAAAAAAAA',k,l)
+            # #                 gray[k][l] = 0
+            # #                 continue
+            #             print(num_a,num_b)
+            #             print(type(a),type(max(num_a)),num_a ,num_b,type(int(max(num_a)-min(num_b))))
+            if ((min(num_a) > max(num_b)) & (max(num_a) - min(num_b) > 15)):  # a区的点设为大边点, b区为小边点, 5为假设！！！！！！！！！！！！！！！！！
+                for i in a:
+                    scores[i[0]][i[1]] = scores[i[0]][i[1]] + 100
+                #                     mark[k][l][0].append(i)
+                for i in b:
+                    scores[i[0]][i[1]] = scores[i[0]][i[1]] + 10
+            #                     mark[k][l][1].append(i)
+            elif ((min(num_b) > max(num_a)) & (max(num_b) - min(num_a) > 15)):  # b区的点设为大边点，a区为小边点
+                for i in a:
+                    scores[i[0]][i[1]] = scores[i[0]][i[1]] + 10
+                #                     mark[k][l][1].append(i)
+                for i in b:
+                    scores[i[0]][i[1]] = scores[i[0]][i[1]] + 100
+            #                     mark[k][l][0].append(i)
+            elif (((min(num_a) >= max(num_b)) & (max(num_a) - min(num_b) <= 15)) | (
+                    (min(num_b) >= max(num_a)) & (max(num_b) - min(num_a) <= 15)) | (
+                          (max(num_a) >= min(num_b)) & (min(num_b) >= min(num_a))) | (
+                          (max(num_b) >= min(num_a)) & (min(num_a) >= min(num_b)))):  # a,b算内部点，
+                for i in a:
+                    #                     print(scores[i[0]][i[1]])
+                    scores[i[0]][i[1]] = scores[i[0]][i[1]] + 1.0
+                #                     mark[k][l][2].append(i)
+                for i in b:
+                    scores[i[0]][i[1]] = scores[i[0]][i[1]] + 1.0
+                #                     mark[k][l][2].append(i)
+    return scores, total_noise  # , mark
+
+
+# 参数：灰度矩阵图,每次取噪声个数
+# 得到：噪声矩阵，积分矩阵, 矛盾点二值矩阵,初始大边点二值矩阵,初始小边点二值矩阵
+def noise_array(gray, ccount, num=8):
+    #     count=0
+    length = gray.shape[0]
+    width = gray.shape[1]
+    noise = np.zeros((length, width))  # 初始化为0
+    score_array_1 = score_new(gray, ccount, num)[0]  # 有值
+    #     print(score_array_1)
+    score_array_2 = np.zeros((length, width, 6))  # 全0
+    contradiction_array = np.zeros((length, width))
+    edge_big = np.zeros((length, width))
+    edge_small = np.zeros((length, width))
+    for i in range(1, length - 1):
+        for j in range(1, width - 1):
+            #             print(i,j)
+            score_array_2[i][j][0] = score_array_1[i][j] // 100  # [0, 0, 0]中第一个值 大边点
+            score_array_2[i][j][1] = score_array_1[i][j] // 10 % 10  # 小边点
+            score_array_2[i][j][2] = score_array_1[i][j] % 10  # 内部点
+            score_array_2[i][j][5] = list(score_array_2[i][j]).index(max(score_array_2[i][j][0:3]))  # 三个系数哪个大，哪个做标记
+            if (score_array_2[i][j][0] > 0) & (score_array_2[i][j][1] == 0):  # 大边点
+                score_array_2[i][j][3] = 2
+                edge_big[i][j] = 1
+            if (score_array_2[i][j][1] > 0) & (score_array_2[i][j][0] == 0):  # 小边点
+                score_array_2[i][j][3] = 1
+                edge_small[i][j] = 1
+            if score_array_2[i][j][0] * score_array_2[i][j][1] > 0:
+                contradiction_array[i][j] = 1
+                score_array_2[i][j][4] = 1  # 标记是否为矛盾点
+            else:
+                contradiction_array[i][j] = 0
+            count_noise = num - score_array_2[i][j][0] - score_array_2[i][j][1] - score_array_2[i][j][2]
+            noise[i][j] = count_noise
+    #             if noise[i][j]<0:
+    #                 count+=1
+    #                 print( score_array_2[i][j])
+    return noise, score_array_2, contradiction_array, edge_big, edge_small  # ,count
+
+
+# 遍历灰度矩阵并计数标记，噪声点+0，内部点+1，小边点+10，大边点+100,num为邻域个数,count为每次取噪声个数
+def score_new(gray, count, num=8):
+    scores = np.zeros((gray.shape[0], gray.shape[1]))  # 初始化为0
+    total_noise = []
+    for k in range(1, gray.shape[0] - 1):
+        for l in range(1, gray.shape[1] - 1):
+            noise, a, b = point_classification(gray, k, l, count, num)  # 根据中心像素点得到八邻域中的噪声，a,b区坐标
+            total_noise.extend(noise)
+            num_a = []
+            num_b = []
+            for i in a:
+                num_a.append(gray[i[0]][i[1]])
+            for i in b:
+                num_b.append(gray[i[0]][i[1]])
+            avg_a = sum(num_a)/len(num_a)
+            avg_b = sum(num_b)/len(num_b)
+            if (min(num_a) > max(num_b)) & (avg_a - avg_b > 5):  # a区的点设为大边点, b区为小边点, 5为假设！！！！！！！！！！！！！！！！！
+                for i in a:
+                    scores[i[0]][i[1]] = scores[i[0]][i[1]] + 100
+                for i in b:
+                    scores[i[0]][i[1]] = scores[i[0]][i[1]] + 10
+            elif (min(num_b) > max(num_a)) & (avg_b - avg_a > 5):  # b区的点设为大边点，a区为小边点
+                for i in a:
+                    scores[i[0]][i[1]] = scores[i[0]][i[1]] + 10
+                for i in b:
+                    scores[i[0]][i[1]] = scores[i[0]][i[1]] + 100
+            # elif (((min(num_a) >= max(num_b)) & (avg_a - avg_b <= 5)) | (
+            #         (min(num_b) >= max(num_a)) & (avg_b - avg_a <= 5)) | (
+            #               (max(num_a) >= min(num_b)) & (min(num_b) >= min(num_a))) | (
+            #               (max(num_b) >= min(num_a)) & (min(num_a) >= min(num_b)))):  # a,b算内部点，
+            else:
+                for i in a:
+                    scores[i[0]][i[1]] = scores[i[0]][i[1]] + 1.0
+                for i in b:
+                    scores[i[0]][i[1]] = scores[i[0]][i[1]] + 1.0
+    return scores, total_noise
