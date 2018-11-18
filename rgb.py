@@ -57,7 +57,7 @@ def fix_noise(gray, i, j, x, y):
 
 
 # 区域分割的函数
-def cut(gray, th, th2):
+def cut(gray, th, th2, rgb):
     re = []  # 存储符合条件的八邻域分割点
     re_weak = []
     noise_num = 0
@@ -69,14 +69,16 @@ def cut(gray, th, th2):
             for k in range(len(xx)):
                 poit[(i + xx[k], j + yy[k])] = gray[i + xx[k], j + yy[k]]
                 # if i == 1 and j == 1:
-                    #     # print(i + xx[k], j + yy[k])
-                    #     # print(i + xx[k - 1], j + yy[k - 1])
-                    # print(type(gray[i + xx[k], j + yy[k]]))
-                    # print(type(gray[i + xx[k - 1], j + yy[k - 1]]))
+                #     # print(i + xx[k], j + yy[k])
+                #     # print(i + xx[k - 1], j + yy[k - 1])
+                # print(type(gray[i + xx[k], j + yy[k]]))
+                # print(type(gray[i + xx[k - 1], j + yy[k - 1]]))
                 #     # print((gray[i + xx[k], j + yy[k]] - gray[i + xx[k - 1], j + yy[k - 1]]))
                 #     print(int(gray[i + xx[k], j + yy[k]]) - int(gray[i + xx[k - 1], j + yy[k - 1]]))
                 mul_list[((i + xx[k], j + yy[k]), (i + xx[k - 1], j + yy[k - 1]))] = pow(
-                    int(gray[i + xx[k], j + yy[k]]) - int(gray[i + xx[k - 1], j + yy[k - 1]]), 2)
+                    int(rgb[i + xx[k], j + yy[k], 0]) - int(rgb[i + xx[k - 1], j + yy[k - 1], 0]), 2) + pow(
+                    int(rgb[i + xx[k], j + yy[k], 1]) - int(rgb[i + xx[k - 1], j + yy[k - 1], 1]), 2) + pow(
+                    int(rgb[i + xx[k], j + yy[k], 2]) - int(rgb[i + xx[k - 1], j + yy[k - 1], 2]), 2)
 
             noise, a, b = modify.point_classification_new(gray, i, j, 1)  # 找到八邻域中的一个噪声点,后续判断噪声点是否影响分割点
             noise_pos[noise[0][0], noise[0][1]] = 1

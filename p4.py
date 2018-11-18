@@ -1,6 +1,25 @@
+# import p2
+# import numpy as np
+# import cv2
+#
+# # gray = np.loadtxt("D:\\cs.csv", dtype=np.int, delimiter=",", encoding='utf-8')
+# # gray = np.loadtxt("D:\\cs.csv", dtype=np.int, delimiter=",", encoding='utf-8', usecols=range(5))
+#
+# # a, b, c = p2.cut(gray, 0, 1)
+# # print(a)
+# a = cv2.imread("D:\\experiment\\pic\\q\\8068.jpg")
+# # print(a)
+# # print(a[0])
+# # print(a[1])
+# # print(a[2])
+# np.savetxt("D:\\a0" + ".csv", a[:, :, 0], fmt="%d", delimiter=',')
+# np.savetxt("D:\\a1" + ".csv", a[:, :, 1], fmt="%d", delimiter=',')
+# np.savetxt("D:\\a2" + ".csv", a[:, :, 2], fmt="%d", delimiter=',')
+
+
 # 以像素点之间的中点向量作为分割边界
 
-import p2
+import rgb
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
@@ -93,7 +112,8 @@ def verify_close(gray, x, y, gray1):
         # fix_area(gray, x, y)
         fix_area1(gray1, x * 2, y * 2)
     else:
-        # fix_noise(gray1, x * 2, y * 2)
+        # print(gray)
+        fix_noise(gray, x * 2, y * 2, gray1)
         print("2222")
     # print(tag)
 
@@ -102,16 +122,25 @@ x_po = [-1, 0, 1, 0]
 y_po = [0, 1, 0, -1]
 
 
-def fix_noise(gray1, x, y):
+def fix_noise(gray, x, y, gray1):
     for i in range(x, x + 10):
         for j in range(y, y + 10):
             if gray1[i, j] == 1:
-                tag = 0
-                for k in range(1, len(x_po)):
-                    if gray1[i + x_po[0], j + y_po[0]] == gray1[i + x_po[k], j + y_po[k]]:
-                        tag += 1
-                if tag == 3:
-                    gray1[i, j] = 0
+                # tag = 0
+                # for k in range(1, len(x_po)):
+                #     if gray1[i + x_po[0], j + y_po[0]] == gray1[i + x_po[k], j + y_po[k]] and (
+                #             gray1[i + x_po[0], j + y_po[0]] != 1 or gray1[i + x_po[k], j + y_po[k]] != 1):
+                #         tag += 1
+                # if tag == 3:
+                #     gray1[i, j] = 0
+                if i % 2 == 0:
+                    if gray[int(i / 2), int(j / 2 + 0.5)] == gray[int(i / 2), int(j / 2 - 0.5)]:
+                        gray1[i, j] = 0
+                        # print("fix__j")
+                if j % 2 == 0:
+                    if gray[int(i / 2 + 0.5), int(j / 2)] == gray[int(i / 2 - 0.5), int(j / 2)]:
+                        gray1[i, j] = 0
+                        # print("fix__i")
 
 
 src = "41004"
@@ -120,9 +149,10 @@ outpath = "D:\\out\\"
 
 raw = cv2.imread(inpath + src + ".jpg")
 raw_Filter = cv2.bilateralFilter(raw, 7, 50, 50)
-
 raw2 = cv2.cvtColor(raw_Filter, cv2.COLOR_BGR2GRAY)
-raw2_Filter = cv2.bilateralFilter(raw2, 7, 50, 50)
+raw2_Filter = raw2
+
+# raw2_Filter = cv2.bilateralFilter(raw2, 7, 50, 50)
 
 cv2.imwrite("D:\\gray.jpg", raw2_Filter)
 np.savetxt("D:\\gray" + ".csv", raw2_Filter, fmt="%d", delimiter=',')
@@ -133,7 +163,7 @@ np.savetxt("D:\\gray" + ".csv", raw2_Filter, fmt="%d", delimiter=',')
 
 # re, re_weak = p2.cut(raw2_Filter, 20, 3)
 # 大小两个阈值
-re, re_weak, noise = p2.cut(raw2_Filter, 6, 3)
+re, re_weak, noise = rgb.cut(raw2_Filter, 6, 3, raw_Filter)
 np.savetxt("D:\\fix_gray" + ".csv", raw2_Filter, fmt="%d", delimiter=',')
 
 print(re)
@@ -227,6 +257,7 @@ plt.gca().invert_yaxis()
 plt.savefig("D:\\re_local_line" + src,
             dpi=1000)  # 指定分辨率保存
 
+
 # print(gray)
 # gray1 = np.zeros((gray.shape[0] * 2, gray.shape[1] * 2))
 # print(gray1)
@@ -247,7 +278,8 @@ plt.savefig("D:\\re_local_line" + src,
 # fix_tag(gray1, 6, 5)
 # fix_tag(gray1, 8, 5)
 # fix_tag(gray1, 0, 5)
-
+# fix_tag(gray1, 1, 2)
+#
 # print(gray1)
 # verify_close(gray, 0, 0, gray1)
 # print(gray1)

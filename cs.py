@@ -20,7 +20,7 @@ re = np.array([[150, 150, 150], [120, 120, 120], [120, 140, 130]])
 
 # no, a, b = modify.point_classification_new(re, 7, 72, 1)
 # no, a, b = modify.point_classification_new(re, 1, 1, 2)
-no, a, b = modify.point_classification_new(re, 1, 1, 6)
+no, a, b = modify.point_classification_new(re, 1, 1, 0)
 for x in no:
     print(re[x[0], x[1]], end=" ")
 print()
