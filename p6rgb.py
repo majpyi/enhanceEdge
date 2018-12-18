@@ -197,9 +197,7 @@ def cut(gray, th, th2, rgb):
                     elif th >= abs((sum_a / num_a) - (sum_b / num_b)) >= th2:
                         re_weak.append(n1)  # 如果噪声对八邻域分隔没有影响,那么把认为分割正确的两个点加入进去,两个tuple,一共四个坐标
                         re_weak.append(n2)
-                    # print("re")
-                    # print(re)
-    print(noise_num)
+    # print(noise_num)
     return re, re_weak, noise_pos
 
 
@@ -261,25 +259,36 @@ def find_weak(min_point, show):
         for j in range(min_point.shape[1]):
             if min_point[i, j] == 2:  # 四邻域范围内存在明显的区域分割点
                 if i % 2 == 0 and j % 2 != 0:  # 区域的分割点在行上
-                    print(end="")
+                    print((i / 2, j / 2))
+                    # print("1,3")
                     find_next(i / 2, j / 2, 1, show, x, y)
                     find_next(i / 2, j / 2, 3, show, x, y)
+                    # find_next(i / 2, (j-1) / 2, 0, show, x, y)
+                    # find_next(i / 2, (j-1) / 2, 2, show, x, y)
+                    # find_next(i / 2, j / 2, 0, show, x, y)
+                    # find_next(i / 2, j / 2, 2, show, x, y)
                 elif i % 2 != 0 and j % 2 == 0:  # 区域的分割点在列上
+                    print((i / 2, j / 2))
+                    # print("0,2")
                     find_next(i / 2, j / 2, 0, show, x, y)
                     find_next(i / 2, j / 2, 2, show, x, y)
-                    print(end="")
+                    # find_next((i-1) / 2, j / 2, 1, show, x, y)
+                    # find_next((i-1) / 2, j / 2, 3, show, x, y)
+                    # find_next(i / 2, j / 2, 1, show, x, y)
+                    # find_next(i / 2, j / 2, 3, show, x, y)
     return x, y
 
 
 # 开始延伸处理
 # 横纵坐标i,j  n 当前四邻域的边的序号(i,j所在边的序号)
 def find_next(i, j, n, show, x, y):
+    print("find")
     next = []  # 四邻域中四个中点的数值
     point = []  # 四邻域的四个中点的坐标
     next_point = []  # 下一个邻域的边的索引编号
-    if i <= 2 or i >= show.shape[0] / 2 - 2:
+    if i < 0.5 or i > (show.shape[0]) / 2 - 1.5:
         return
-    if j <= 2 or j >= show.shape[1] / 2 - 2:
+    if j < 0.5 or j > (show.shape[1]) / 2 - 1.5:
         return
     if n == 0:
         next.append(-1)
@@ -322,17 +331,18 @@ def find_next(i, j, n, show, x, y):
         point.append((-1, -1))
         next_point = [2, 3, 0, -1]
     flag = 0
+    print(next)
     for k in range(4):
         if next[k] == 2 or next[k] == 3:
+            print("2222")
             flag = 1
-            print("aaa")
             return
     for k in range(4):
         if next[k] == 1 and flag == 0:
+            print("11111")
             x.append(point[k][0])
             y.append(point[k][1])
             show[int(point[k][0] * 2), int(point[k][1] * 2)] = 3  # 延伸之后将标记进行修改
-            print("nnnnn")
             find_next(point[k][0], point[k][1], next_point[k], show, x, y)
 
 
@@ -410,3 +420,53 @@ def show_cut(gray, th, th2, rgb, i, j):
     # print("noise",end="")
     # print(noise,end="  ")
     # print(gray[noise[0][0],noise[0][1]])
+
+
+
+
+def fix_transition(gray, x, y):
+    sum_tr = 0
+    for i in range(x, x + 5):
+        for j in range(y, y + 5):
+            sum_tr+=gray[i,j]
+    avg = sum_tr/25
+    low_tr = 0
+    low_low = 255
+    high_tr = 0
+    high_high = 0
+    for i in range(x, x + 5):
+        for j in range(y, y + 5):
+            if gray[i,j] < avg:
+                low_tr+=1
+                if gray[i,j] < low_low:
+                    low_low = gray[i,j]
+            if gray[i,j] > avg:
+                high_tr+=1
+                if gray[i,j] >high_high:
+                    high_high = gray[i,j]
+    if low_tr>=8 and high_tr>=8 :
+        for i in range(x, x + 5):
+            for j in range(y, y + 5):
+                if gray[i,j] > avg:
+                    gray[i,j] = avg
+                else:
+                    gray[i,j] = avg
+
+
+def merge_tag(tag1,tag2):
+    for i in range(tag1.shape[0]):
+        for j in range(tag1.shape[1]):
+            if tag1[i,j]==1:
+                tag2[i,j]=1
+    return tag2
+
+# xx_t = [-1, -1, -1, 0, +1, +1, +1, 0,0]
+# yy_t = [+1, 0, -1, -1, -1, 0, +1, +1,0]
+def transition_verify(gray,i,j):
+    ls_pixel = []
+    ls_pixel.append(gray[i,j])
+    for k in range(len(xx)):
+        ls_pixel.append(gray[i+xx[k],j+yy[k]])
+    sorted(ls_pixel)
+    ls_pixel.sort()
+    print(ls_pixel)

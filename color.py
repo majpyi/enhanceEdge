@@ -4,11 +4,10 @@ import MyMarchingSquares
 import matplotlib.pyplot as plt
 import cv2
 import modify
-import time
 
 inpath = "D:\\in\\"
 outpath = "D:\\out\\"
-src = "41004"
+src = "2"
 
 raw = cv2.imread(inpath + src + ".jpg")
 
@@ -31,11 +30,8 @@ print(0)
 # cv2.imwrite(outpath + src + "_grayBil" + ".jpg", raw2_Filter)
 # np.savetxt(outpath + src + '__grayBil' + '.csv', raw2_Filter, fmt="%d", delimiter=',')
 # raw2 = raw2_Filter
-start1 = time.clock()
 noise_num = 1
-a, b, c, d, e = modify.noise_array(raw2, noise_num)
-end1 = time.clock()
-
+# a, b, c, d, e = modify.noise_array(raw2, noise_num)
 # np.savetxt("D:\\noise\\noise.csv", a, fmt="%d", delimiter=',')
 
 # raw3 = change.fix_noise(raw2, a, 1)
@@ -43,40 +39,35 @@ end1 = time.clock()
 # np.savetxt("D:\\noise\\re.csv", raw3, fmt="%d", delimiter=',')
 #
 # rows = raw2.shape
-start2 = time.clock()
 
-re = np.zeros((c.shape[0],c.shape[1],3))
+re = np.zeros((5,5,3))
 print(1)
-# 矛盾点
-for i in range(c.shape[0]):
-    for j in range(c.shape[1]):
-        if c[i, j] == 1:
+# 矛盾点   蓝色
+for i in range(5):
+    for j in range(5):
             re[i, j][0] = 255
 # 内部点
-print(2)
-for i in range(c.shape[0]):
-    for j in range(c.shape[1]):
-        if c[i,j]!=1 and d[i,j]!=1 and e[i,j]!=1:
-            re[i,j][1]=255
-print(3)
-# 边缘点
-for i in range(d.shape[0]):
-    for j in range(d.shape[1]):
-        if d[i, j] == 1:
-            re[i, j][2] = 255
-        if e[i, j] == 1:
-            re[i, j][2] = 255
-# for i in range(e.shape[0]):
-#     for j in range(e.shape[1]):
+# print(2)
+# for i in range(c.shape[0]):
+#     for j in range(c.shape[1]):
+#         if c[i,j]!=1 and d[i,j]!=1 and e[i,j]!=1:
+#             re[i,j][1]=255
+# print(3)
+# # 边缘点
+# for i in range(d.shape[0]):
+#     for j in range(d.shape[1]):
+#         if d[i, j] == 1:
+#             re[i, j][2] = 255
 #         if e[i, j] == 1:
 #             re[i, j][2] = 255
-print(4)
+# # for i in range(e.shape[0]):
+# #     for j in range(e.shape[1]):
+# #         if e[i, j] == 1:
+# #             re[i, j][2] = 255
+# print(4)
 cv2.imwrite("D:\\guodu.jpg", re)
-end2 = time.clock()
 
 # re = change.gradient_average(raw2, rows[0], rows[1], 1)
 # re[0, :] = re[rows[0] - 1, :] = re[:, 0] = re[:, rows[1] - 1] = 0
 # re1 = MyMarchingSquares.find_cross(MyMarchingSquares.labels_matrix_new(re, 30, 20))
 # cv2.imwrite("D:\\cross.jpg", re1)
-print(str(end1-start1))
-print(str(end2-start2))

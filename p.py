@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 import change
 import numpy as np
 import modify
+import p6rgb
+#  测试代码用的没有什么用处
+
 
 # gray = np.array([[10, 10, 10, 10], [10, 10, 11, 10], [10, 12, 5, 10], [10, 10, 10, 10]])
 gray = np.array([[102, 102, 102], [106, 106, 106], [110, 110, 110]])
@@ -24,10 +27,15 @@ gray = np.array([[102, 102, 102], [106, 106, 106], [110, 110, 110]])
 # np.savetxt(outpath + src + '__大边点' + '.csv', d, fmt="%d", delimiter=',')
 # np.savetxt(outpath + src + '__小边点' + '.csv', e, fmt="%d", delimiter=',')
 
-noise, a, b = modify.point_classification(gray, 1, 1, 1)
-print(a)
+# noise, a, b = modify.point_classification(gray, 1, 1, 1)
+# print(a)
 #
-print(b)
+# print(b)
+
+
+p6rgb.transition_verify(gray,1,1)
+
+
 
 #
 # plt.plot([5, 10], [1, 2], [1, 2], [6, 20])

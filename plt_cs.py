@@ -47,22 +47,22 @@ def point_show(gray, re, rey, rex):
         xx.append(((y1 + y2) / 2))
         yy.append(((x1 + x2) / 2))
 
-        # for m in range(0, len(re_weak), 2):
-    #     x1 = re_weak[m][0][0]
-    #     y1 = re_weak[m][0][1]
-    #     x2 = re_weak[m][1][0]
-    #     y2 = re_weak[m][1][1]
-    #     xx.append(((y1 + y2) / 2))
-    #     yy.append(((x1 + x2) / 2))
+    for m in range(0, len(re_weak), 2):
+        x1 = re_weak[m][0][0]
+        y1 = re_weak[m][0][1]
+        x2 = re_weak[m][1][0]
+        y2 = re_weak[m][1][1]
+        xx.append(((y1 + y2) / 2))
+        yy.append(((x1 + x2) / 2))
 
-    print(len(x))
-    print(len(y))
-    print(len(xx))
-    print(xx)
-    print(len(yy))
-    print(yy)
-    print(len(rex))
-    print(len(rey))
+    # print(len(x))
+    # print(len(y))
+    # print(len(xx))
+    # print(xx)
+    # print(len(yy))
+    # print(yy)
+    # print(len(rex))
+    # print(len(rey))
     # plt.xlim((0, 500))
     # plt.xlim(0, 500,1)
     # plt.xticks(np.linspace(0, 500, 1))
@@ -107,25 +107,25 @@ def point_noise(noise):
 # point_show(gray)
 
 
-# src = "41004"
-src = "beibu"
+src = "41004"
+# src = "beibu"
 # inpath = "D:\\experiment\\pic\\q\\"
 inpath = "D:\\in\\"
 outpath = "D:\\out\\"
 
 # gray = np.array([[100, 100, 100], [80, 80, 80], [80, 110, 80]])
 raw = cv2.imread(inpath + src + ".jpg")
-raw_Filter = raw
-# raw_Filter = cv2.bilateralFilter(raw, 7, 50, 50)
+# raw_Filter = raw
+raw_Filter = cv2.bilateralFilter(raw, 7, 50, 50)
 raw2 = cv2.cvtColor(raw_Filter, cv2.COLOR_BGR2GRAY)
-raw2_Filter = raw2
-# raw2_Filter = cv2.bilateralFilter(raw2, 7, 50, 50)
+# raw2_Filter = raw2
+raw2_Filter = cv2.bilateralFilter(raw2, 7, 50, 50)
 cv2.imwrite("D:\\gray.jpg", raw2_Filter)
 np.savetxt("D:\\gray" + ".csv", raw2_Filter, fmt="%d", delimiter=',')
 
 # re, re_weak = p2.cut(raw2_Filter, 20, 3)
 # 大小两个阈值
-re, re_weak, noise = p2.cut(raw2_Filter, 0, 1)
+re, re_weak, noise = p2.cut(raw2_Filter, 10, 5)
 np.savetxt("D:\\fix_gray" + ".csv", raw2_Filter, fmt="%d", delimiter=',')
 np.savetxt("D:\\noise" + ".csv", noise, fmt="%d", delimiter=',')
 
@@ -162,11 +162,11 @@ for k in range(0, len(re_weak)):
     xx = ((x1 + x2))
     show[xx, yy] = 1
 
-# x, y = p2.find_weak(show, show)
+x, y = p2.find_weak(show, show)
 # print(x)
 # print(y)
-x = []
-y = []
+# x = []
+# y = []
 point_show(raw2_Filter, re, x, y)
 
 np.savetxt("D:\\show" + ".csv", show, fmt="%d", delimiter=',')

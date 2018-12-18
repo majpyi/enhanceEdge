@@ -1,5 +1,5 @@
 import numpy as np
-
+import time
 
 def line_energy(p1, p2):
     return (p1 - p2) * (p1 - p2)
@@ -303,6 +303,7 @@ def point_classification_new(gray, i, j, count, num=8):
 
 # 遍历灰度矩阵并计数标记，噪声点+0，内部点+1，小边点+10，大边点+100,num为邻域个数,count为每次取噪声个数
 def score(gray, count, num=8):
+    th = 10
     scores = np.zeros((gray.shape[0], gray.shape[1]))  # 初始化为0
     total_noise = []
     #     mark = [[[[]]*3]*width]*length
@@ -327,22 +328,22 @@ def score(gray, count, num=8):
             # #                 continue
             #             print(num_a,num_b)
             #             print(type(a),type(max(num_a)),num_a ,num_b,type(int(max(num_a)-min(num_b))))
-            if ((min(num_a) > max(num_b)) & (max(num_a) - min(num_b) > 15)):  # a区的点设为大边点, b区为小边点, 5为假设！！！！！！！！！！！！！！！！！
+            if ((min(num_a) > max(num_b)) & (max(num_a) - min(num_b) > th)):  # a区的点设为大边点, b区为小边点, 5为假设！！！！！！！！！！！！！！！！！
                 for i in a:
                     scores[i[0]][i[1]] = scores[i[0]][i[1]] + 100
                 #                     mark[k][l][0].append(i)
                 for i in b:
                     scores[i[0]][i[1]] = scores[i[0]][i[1]] + 10
             #                     mark[k][l][1].append(i)
-            elif ((min(num_b) > max(num_a)) & (max(num_b) - min(num_a) > 15)):  # b区的点设为大边点，a区为小边点
+            elif ((min(num_b) > max(num_a)) & (max(num_b) - min(num_a) > th)):  # b区的点设为大边点，a区为小边点
                 for i in a:
                     scores[i[0]][i[1]] = scores[i[0]][i[1]] + 10
                 #                     mark[k][l][1].append(i)
                 for i in b:
                     scores[i[0]][i[1]] = scores[i[0]][i[1]] + 100
             #                     mark[k][l][0].append(i)
-            elif (((min(num_a) >= max(num_b)) & (max(num_a) - min(num_b) <= 15)) | (
-                    (min(num_b) >= max(num_a)) & (max(num_b) - min(num_a) <= 15)) | (
+            elif (((min(num_a) >= max(num_b)) & (max(num_a) - min(num_b) <= th)) | (
+                    (min(num_b) >= max(num_a)) & (max(num_b) - min(num_a) <= th)) | (
                           (max(num_a) >= min(num_b)) & (min(num_b) >= min(num_a))) | (
                           (max(num_b) >= min(num_a)) & (min(num_a) >= min(num_b)))):  # a,b算内部点，
                 for i in a:
@@ -357,12 +358,20 @@ def score(gray, count, num=8):
 
 # 参数：灰度矩阵图,每次取噪声个数
 # 得到：噪声矩阵，积分矩阵, 矛盾点二值矩阵,初始大边点二值矩阵,初始小边点二值矩阵
+# 其中噪声矩阵是每个像素点被判断为噪声点的次数的矩阵
 def noise_array(gray, ccount, num=8):
     #     count=0
     length = gray.shape[0]
     width = gray.shape[1]
     noise = np.zeros((length, width))  # 初始化为0
+
+    start1 = time.clock()
     score_array_1 = score_new(gray, ccount, num)[0]  # 有值
+    end1 = time.clock()
+
+    print(str(end1-start1))
+
+    start2 = time.clock()
     #     print(score_array_1)
     score_array_2 = np.zeros((length, width, 6))  # 全0
     contradiction_array = np.zeros((length, width))
@@ -391,11 +400,15 @@ def noise_array(gray, ccount, num=8):
     #             if noise[i][j]<0:
     #                 count+=1
     #                 print( score_array_2[i][j])
+    end2 = time.clock()
+    print(str(end2-start2))
+
     return noise, score_array_2, contradiction_array, edge_big, edge_small  # ,count
 
 
 # 遍历灰度矩阵并计数标记，噪声点+0，内部点+1，小边点+10，大边点+100,num为邻域个数,count为每次取噪声个数
 def score_new(gray, count, num=8):
+    th = 3
     scores = np.zeros((gray.shape[0], gray.shape[1]))  # 初始化为0
     total_noise = []
     for k in range(1, gray.shape[0] - 1):
@@ -410,18 +423,20 @@ def score_new(gray, count, num=8):
                 num_b.append(gray[i[0]][i[1]])
             avg_a = sum(num_a)/len(num_a)
             avg_b = sum(num_b)/len(num_b)
-            if (min(num_a) > max(num_b)) & (avg_a - avg_b > 5):  # a区的点设为大边点, b区为小边点, 5为假设！！！！！！！！！！！！！！！！！
+            if (min(num_a) > max(num_b)) & (avg_a - avg_b > th):  # a区的点设为大边点, b区为小边点, 5为假设！！！！！！！！！！！！！！！！！
+            # if avg_a - avg_b > th:  # a区的点设为大边点, b区为小边点, 5为假设！！！！！！！！！！！！！！！！！
                 for i in a:
                     scores[i[0]][i[1]] = scores[i[0]][i[1]] + 100
                 for i in b:
                     scores[i[0]][i[1]] = scores[i[0]][i[1]] + 10
-            elif (min(num_b) > max(num_a)) & (avg_b - avg_a > 5):  # b区的点设为大边点，a区为小边点
+            elif (min(num_b) > max(num_a)) & (avg_b - avg_a > th):  # b区的点设为大边点，a区为小边点
+            # elif avg_b - avg_a > th:  # b区的点设为大边点，a区为小边点
                 for i in a:
                     scores[i[0]][i[1]] = scores[i[0]][i[1]] + 10
                 for i in b:
                     scores[i[0]][i[1]] = scores[i[0]][i[1]] + 100
-            # elif (((min(num_a) >= max(num_b)) & (avg_a - avg_b <= 5)) | (
-            #         (min(num_b) >= max(num_a)) & (avg_b - avg_a <= 5)) | (
+            # elif (((min(num_a) >= max(num_b)) & (avg_a - avg_b <= th)) | (
+            #         (min(num_b) >= max(num_a)) & (avg_b - avg_a <= th)) | (
             #               (max(num_a) >= min(num_b)) & (min(num_b) >= min(num_a))) | (
             #               (max(num_b) >= min(num_a)) & (min(num_a) >= min(num_b)))):  # a,b算内部点，
             else:

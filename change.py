@@ -318,6 +318,7 @@ def gradient(raws, x, y):
 
 
 # 在根据最小能量的方法去掉一个最大概率矛盾点的情况下,再按照两个区域的均值差,得到区分度值
+# 如果区域进行交叉那么就把像素点的过渡区的值改为0
 def gradient_average(raws, x, y, noise_num):
     re = np.zeros((x, y))
     for i in range(1, x - 1):
@@ -407,6 +408,7 @@ def gradient_average(raws, x, y, noise_num):
 
 
 # 在根据最小能量的方法去掉一个最大概率矛盾点的情况下,再按照两个区域的均值差,得到区分度值
+# 如论是否有区域交叉都会有一个区分度值
 def gradient_average_new(raws, x, y, noise_num):
     re = np.zeros((x, y))
     for i in range(1, x - 1):
@@ -956,6 +958,7 @@ def absabs(re):
 
 
 # 从右上角开始,逆时针旋转
+# 通过判断像素点是否为噪声点,然后对其八邻域进行分区,把属于其分区的像素区域的均值赋予中心点
 # xxx = [-1, -1, -1, 0, +1, +1, +1, 0]
 # yyy = [+1, 0, -1, -1, -1, 0, +1, +1]
 def fix_noise(src1, tag, noise_num):
@@ -983,15 +986,16 @@ def fix_noise(src1, tag, noise_num):
                         src[i, j] = b_sum / b_num
                     else:
                         src[i, j] = a_sum / a_num
-                if (i == 7 and j == 72 and b_num != 0):
-                    print(b_sum / b_num)
-                if (i == 7 and j == 72 and a_num != 0):
-                    print(a_sum / a_num)
-                if (i == 7 and j == 72):
-                    print(b_num)
-                    print(a_num)
-                    print(b_sum)
-                    print(a_sum)
+                # 输出测试结果
+                # if (i == 7 and j == 72 and b_num != 0):
+                #     print(b_sum / b_num)
+                # if (i == 7 and j == 72 and a_num != 0):
+                #     print(a_sum / a_num)
+                # if (i == 7 and j == 72):
+                #     print(b_num)
+                #     print(a_num)
+                #     print(b_sum)
+                #     print(a_sum)
     return src
 
 

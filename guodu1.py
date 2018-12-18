@@ -4,22 +4,21 @@ import MyMarchingSquares
 import matplotlib.pyplot as plt
 import cv2
 import modify
-import time
 
 inpath = "D:\\in\\"
 outpath = "D:\\out\\"
-src = "41004"
+src = "2"
 
 raw = cv2.imread(inpath + src + ".jpg")
 
-raw = cv2.bilateralFilter(raw, 7, 50, 50)
+# raw = cv2.bilateralFilter(raw, 7, 50, 50)
 
 # raw_Filter = cv2.bilateralFilter(raw, 7, 50, 50)
 # cv2.imwrite(outpath + src + "__srcBil" + ".jpg", raw_Filter)
 # raw = raw_Filter
 # raw2 = cv2.cvtColor(raw_Filter, cv2.COLOR_BGR2GRAY)
 raw2 = cv2.cvtColor(raw, cv2.COLOR_BGR2GRAY)
-raw2 = cv2.bilateralFilter(raw2, 7, 50, 50)
+# raw2 = cv2.bilateralFilter(raw2, 7, 50, 50)
 
 print(0)
 # np.savetxt("D:\\noise\\gray.csv", raw2, fmt="%d", delimiter=',')
@@ -31,11 +30,8 @@ print(0)
 # cv2.imwrite(outpath + src + "_grayBil" + ".jpg", raw2_Filter)
 # np.savetxt(outpath + src + '__grayBil' + '.csv', raw2_Filter, fmt="%d", delimiter=',')
 # raw2 = raw2_Filter
-start1 = time.clock()
 noise_num = 1
 a, b, c, d, e = modify.noise_array(raw2, noise_num)
-end1 = time.clock()
-
 # np.savetxt("D:\\noise\\noise.csv", a, fmt="%d", delimiter=',')
 
 # raw3 = change.fix_noise(raw2, a, 1)
@@ -43,7 +39,6 @@ end1 = time.clock()
 # np.savetxt("D:\\noise\\re.csv", raw3, fmt="%d", delimiter=',')
 #
 # rows = raw2.shape
-start2 = time.clock()
 
 re = np.zeros((c.shape[0],c.shape[1],3))
 print(1)
@@ -71,12 +66,9 @@ for i in range(d.shape[0]):
 #         if e[i, j] == 1:
 #             re[i, j][2] = 255
 print(4)
-cv2.imwrite("D:\\guodu.jpg", re)
-end2 = time.clock()
+cv2.imwrite("D:\\guodu1.jpg", re)
 
 # re = change.gradient_average(raw2, rows[0], rows[1], 1)
 # re[0, :] = re[rows[0] - 1, :] = re[:, 0] = re[:, rows[1] - 1] = 0
 # re1 = MyMarchingSquares.find_cross(MyMarchingSquares.labels_matrix_new(re, 30, 20))
 # cv2.imwrite("D:\\cross.jpg", re1)
-print(str(end1-start1))
-print(str(end2-start2))
