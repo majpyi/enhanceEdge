@@ -2,6 +2,7 @@ import M
 import numpy as np
 from change import *
 
+# 处理噪声
 path = ""
 
 src = cv2.imread(path + "2.jpg")

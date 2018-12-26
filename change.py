@@ -883,7 +883,7 @@ def traverse(matrix):
     plt.show()
     # return
 
-
+# 测试plt的函数
 def pltshow():
     plt.plot([1, 2], [3, 4], color='r', lw=0.1)
     plt.xticks([])

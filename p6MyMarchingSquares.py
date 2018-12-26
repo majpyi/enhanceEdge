@@ -393,6 +393,7 @@ def extend_new(matrix, points_x, points_y, extend_n, extend_n1, extend_i, extend
     return points_x, points_y
 
 
+# 判断该区域中有几个中点的分割点,如果分割点大于等于二则说明是可以进行画边的
 def verify_mid(gray1, x, y):
     tag = 0
     re_list_x = []
@@ -425,7 +426,7 @@ def verify_mid(gray1, x, y):
 # yy = [0, 1, 1, 0]
 
 
-
+# 每个像素点查看其在左上角所在的四邻域的范围内的中点的个数是否满足画边的条件如果满足条件就进行画边处理
 def show_line(gray,gray1):
     for i in range(gray.shape[0]):
         for j in range(gray.shape[1]):

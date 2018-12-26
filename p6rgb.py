@@ -348,7 +348,7 @@ def find_next(i, j, n, show, x, y):
 
 # cut(gray,1,1)
 
-
+# 显示结果而已
 def show_cut(gray, th, th2, rgb, i, j):
     re = []  # 存储符合条件的八邻域分割点
     re_weak = []

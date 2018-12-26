@@ -1,4 +1,5 @@
 # 以像素点作为分割边界
+# 测试主函数
 import p2
 import numpy as np
 import cv2

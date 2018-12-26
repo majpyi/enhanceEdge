@@ -90,7 +90,7 @@ def fix_area(gray, x, y):
         for j in range(y, y + 5):
             gray[i, j] = 0
 
-
+# 清除标记图的标记
 def fix_area1(gray1, x, y):
     tag = False
     # for i in range(x+2, x + 8):
@@ -103,24 +103,24 @@ def fix_area1(gray1, x, y):
     if tag == True:
         return 1
 
-def show_gray(gray, x, y):
-    for i in range(x, x + 5):
-        print()
-        for j in range(y, y + 5):
-            print(gray[i,j],end="  ")
-
-
-def show_tag(gray, x, y):
-    for i in range(x, x + 9):
-        print()
-        for j in range(y, y + 9):
-            print(gray[i,j],end="  ")
-
-def show_area(gray, x, y):
-    for i in range(x, x + 5):
-        print()
-        for j in range(y, y + 5):
-            print(gray[i,j],end="  ")
+# def show_gray(gray, x, y):
+#     for i in range(x, x + 5):
+#         print()
+#         for j in range(y, y + 5):
+#             print(gray[i,j],end="  ")
+#
+#
+# def show_tag(gray, x, y):
+#     for i in range(x, x + 9):
+#         print()
+#         for j in range(y, y + 9):
+#             print(gray[i,j],end="  ")
+#
+# def show_area(gray, x, y):
+#     for i in range(x, x + 5):
+#         print()
+#         for j in range(y, y + 5):
+#             print(gray[i,j],end="  ")
 
 
 # gray原始的标记图,x,y起始25邻域的左上坐标点
@@ -159,7 +159,7 @@ x_po = [-1, 0, 1, 0]
 y_po = [0, 1, 0, -1]
 
 
-# 作用:处理区域内部的八邻域多余分割点
+# 作用:处理区域内部的八邻域多余分割点,多余过渡点是该分割点是在5*5邻域分割的两块区域的内部而不是相邻的部分
 # 过程: 查看该分割点前后区域是否被归为同一个区域,前后的判定是根据在横轴坐标的哪个轴上面
 def fix_noise(gray, x, y, gray1):
     for i in range(x, x + 9):
@@ -182,7 +182,7 @@ def fix_noise(gray, x, y, gray1):
                         # print("fix__i")
 
 
-
+# 判断5*5的区域是否是过渡区域,如果大于特定的个数就是过渡区域
 def is_transition(tra,x,y,th):
     sum_num = 0
     for i in range(x, x + 5):
@@ -196,21 +196,20 @@ def is_transition(tra,x,y,th):
 
 
 
-
-
 # 主函数
-src = "41004"
+src = "blur15simple"
+# src = "cs4"
 inpath = "D:\\experiment\\pic\\q\\"
 # outpath = "D:\\out\\"
 raw = cv2.imread(inpath + src + ".jpg")
-# raw2 = cv2.cvtColor(raw, cv2.COLOR_BGR2GRAY)
+# # raw2 = cv2.cvtColor(raw, cv2.COLOR_BGR2GRAY)
 # raw_Filter = cv2.bilateralFilter(raw, 7, 50, 50)
-raw_Filter = raw
-raw2 = cv2.cvtColor(raw_Filter, cv2.COLOR_BGR2GRAY)
+# # raw_Filter = raw
+# raw2 = cv2.cvtColor(raw_Filter, cv2.COLOR_BGR2GRAY)
 # raw2_Filter = cv2.bilateralFilter(raw2, 7, 50, 50)
-raw2_Filter = raw2
-# cv2.imwrite("D:\\gray" + src + ".jpg", raw2_Filter)
-np.savetxt("D:\\gray" + src + ".csv", raw2_Filter, fmt="%d", delimiter=',')
+# # raw2_Filter = raw2
+# # cv2.imwrite("D:\\gray" + src + ".jpg", raw2_Filter)
+# np.savetxt("D:\\gray" + src + ".csv", raw2_Filter, fmt="%d", delimiter=',')
 
 raw2_Filter = np.loadtxt("D:\\re"+src+".csv", dtype=np.int, delimiter=",", encoding='utf-8')
 raw2 = raw2_Filter
@@ -240,7 +239,7 @@ raw = raw_Filter
 
 
 # 大小两个阈值
-re, re_weak, noise = p6rgb.cut(raw2_Filter, 15, 10, raw_Filter)
+re, re_weak, noise = p6rgb.cut(raw2_Filter, 10, 10, raw_Filter)
 
 
 # gray = np.zeros((raw2.shape[0], raw2.shape[1]))
@@ -357,13 +356,22 @@ gray1 = p6rgb.merge_tag(gray_clone,gray1)
 plt.axis("equal")
 plt.gca().invert_yaxis()
 plt.axis('off')
+
+plt.scatter(0, 0, c='r')
+plt.scatter(0, raw2.shape[0], c='r')
+plt.scatter(raw2.shape[1],0, c='r')
+plt.scatter(raw2.shape[1], raw2.shape[0], c='r')
+
 for i in range(1,gray.shape[0]-1):
     for j in range(1,gray.shape[1]-1):
         x, y = p6MyMarchingSquares.verify_mid(gray1, i, j)
         if x!=0 and y!=0:
+            # plt.plot(y, x, lw=0.5,color='black')
             plt.plot(y, x, lw=0.5, color='white')
-plt.savefig("D:\\fix_tran1__" , facecolor='black',
+plt.savefig("D:\\fix_tran1__"+src , facecolor='black',
             dpi=500)  # 指定分辨率保存
+# plt.savefig("D:\\fix_tran1__" ,
+#             dpi=500)  # 指定分辨率保存
 
 
 # 画边的函数

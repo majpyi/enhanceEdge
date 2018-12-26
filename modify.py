@@ -150,6 +150,7 @@ def find_noise(gray, i, j, num=8):
 # 每个八邻域内定位3个最有可能噪声点
 # 参数：灰度矩阵图，中心像素坐标,假设八邻域中可能含有的噪声个数,3*3的八邻域或者是5*5的24邻域
 # 得到：三个噪声点，A,B区与中心像素的坐标
+# 如果噪声相同值多个,按顺序删除
 def point_classification(gray, i, j, count, num=8):
     list_point = point_list(gray, i, j, num)[0]  # 初始的八邻域
     e_point_1 = list_point[:]  # 副本
@@ -215,6 +216,7 @@ def point_classification(gray, i, j, count, num=8):
 # 每个八邻域内定位3个最有可能噪声点
 # 参数：灰度矩阵图，中心像素坐标
 # 得到：三个噪声点，A,B区与中心像素的坐标
+# 如果噪声相同值多个,会删除那个比较多的区域的像素点
 def point_classification_new(gray, i, j, count, num=8):
     global v_a, v_b, index_a, index_b
     list_point = point_list(gray, i, j, num)[0]  # 初始的八邻域
@@ -408,7 +410,7 @@ def noise_array(gray, ccount, num=8):
 
 # 遍历灰度矩阵并计数标记，噪声点+0，内部点+1，小边点+10，大边点+100,num为邻域个数,count为每次取噪声个数
 def score_new(gray, count, num=8):
-    th = 3
+    th = 10
     scores = np.zeros((gray.shape[0], gray.shape[1]))  # 初始化为0
     total_noise = []
     for k in range(1, gray.shape[0] - 1):

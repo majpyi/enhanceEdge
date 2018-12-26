@@ -4,7 +4,7 @@ import p6MyMarchingSquares
 import matplotlib.pyplot as plt
 import modify
 
-src = "blur15simpleline"
+src = "blur15circle"
 # src = "blurblur"
 inpath = "D:\\experiment\\pic\\q\\"
 outpath = "D:\\out\\"
@@ -16,19 +16,34 @@ raw2 = cv2.cvtColor(raw_Filter, cv2.COLOR_BGR2GRAY)
 raw2_Filter = cv2.bilateralFilter(raw2, 7, 50, 50)
 # raw2_Filter = raw2
 
+
+
 cv2.imwrite("D:\\raw2" + src + ".jpg", raw2_Filter)
 np.savetxt("D:\\raw2" + src + ".csv", raw2_Filter, fmt="%d", delimiter=',')
 
 
-noise_num = 1
-a, b, guodu, d, e = modify.noise_array(raw2_Filter, noise_num)
-np.savetxt("D:\\tag_guodu" + src + ".csv", guodu, fmt="%d", delimiter=',')
-for i in range(guodu.shape[0]):
-    for j in range(guodu.shape[1]):
-        if guodu[i, j] == 1:
-            guodu[i, j] = 255
-        # else:
-        #     guodu[i,j] = raw2_Filter[i,j]
+
+re = np.zeros((raw2.shape[0],raw2.shape[1]))
+for i in range(raw2.shape[0]):
+    for j in range(raw2.shape[1]):
+        if raw2_Filter[i, j] == 0 or raw2_Filter[i,j]==255:
+        # if raw2_Filter[i, j] != 0 or raw2_Filter[i,j]!=255:   错错错错
+            # print(1)
+            re[i, j] = -1
+np.savetxt("D:\\tag" + src + ".csv", re, fmt="%d", delimiter=',')
+
+for i in range(raw2.shape[0]):
+    for j in range(raw2.shape[1]):
+        if re[i,j]==-1:
+            re[i,j] =0
+        else:
+            re[i,j] =255
+
+cv2.imwrite("D:\\re" + src + ".jpg", re)
+np.savetxt("D:\\re" + src + ".csv", re, fmt="%d", delimiter=',')
+
+
+guodu = re
 
 xx_tag = [-1, -1, -1, 0, +1, +1, +1, 0]
 yy_tag = [+1, 0, -1, -1, -1, 0, +1, +1]
