@@ -6,10 +6,12 @@ import modify_rgb
 import modify
 
 # src = "blur15simpleline"
+# src = "rgbgray"
 src = "blur1041004"
 # src = "blurblur"
 inpath = "D:\\experiment\\pic\\q\\"
-outpath = "D:\\out\\"
+# inpath = "D:\\"
+outpath = "D:\\rgbtran\\"
 raw = cv2.imread(inpath + src + ".jpg")
 # raw2 = cv2.cvtColor(raw, cv2.COLOR_BGR2GRAY)
 raw_Filter = cv2.bilateralFilter(raw, 7, 50, 50)
@@ -17,16 +19,15 @@ raw_Filter = cv2.bilateralFilter(raw, 7, 50, 50)
 raw2 = cv2.cvtColor(raw_Filter, cv2.COLOR_BGR2GRAY)
 raw2_Filter = cv2.bilateralFilter(raw2, 7, 50, 50)
 # raw2_Filter = raw2
-
 cv2.imwrite("D:\\raw2" + src + ".jpg", raw2_Filter)
 np.savetxt("D:\\raw2" + src + ".csv", raw2_Filter, fmt="%d", delimiter=',')
 
 for noise_num in range(4):
     for th in range(1,7):
-    # noise_num = 2
-    # th =2
-    #     a, b, guodu, d, e = modify_rgb.noise_array(raw2_Filter, raw_Filter,noise_num,th)
-        a, b, guodu, d, e = modify.noise_array(raw2_Filter,noise_num,th)
+# noise_num = 0
+# th =2
+        a, b, guodu, d, e = modify_rgb.noise_array(raw2_Filter, raw_Filter,noise_num,th)
+        # a, b, guodu, d, e = modify_rgb.noise_array(raw2_Filter,noise_num,th)
         # np.savetxt("D:\\guodu" + src + ".csv", guodu, fmt="%d", delimiter=',')
         for i in range(guodu.shape[0]):
             for j in range(guodu.shape[1]):
@@ -73,7 +74,7 @@ for noise_num in range(4):
         #             guodu[i,j]=255
 
         # np.savetxt("D:\\trangray" + src +"ththth"+str(th)+"noisenum"+str(noise_num)+".csv", guodu, fmt="%d", delimiter=',')
-        cv2.imwrite("D:\\trangray" + src +"ththth"+str(th)+"noisenum"+str(noise_num)+".jpg", guodu)
+        cv2.imwrite(outpath+"tranrgb" + src +"ththth"+str(th)+"noisenum"+str(noise_num)+".jpg", guodu)
 
 # 查看过渡区域周围八邻域的像素点,查看是否有非过渡区的点,把非过渡区的点中最接近过渡区的像素点的值付给过渡区的这个像素点
 def change_tran(raw2, guodu):

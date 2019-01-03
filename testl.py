@@ -1,0 +1,42 @@
+import modify_rgb
+import numpy as np
+# gray = np.array([[254,253,252],[253,252,251],[253,252,250]])
+gray = np.array([[2,2,2],[2,2,2],[2,2,2]])
+raw = np.zeros((3,3,3))
+# raw[:,:,0] = np.array([[1,1,1],[2,2,2],[2,2,2]])
+raw[:,:,0] = np.array([[1,1,1],[0,0,0],[3,3,3]])
+raw[:,:,1] = gray
+raw[:,:,2] = gray
+# print(raw[0,0])
+# print(raw[0,1])
+# print(raw[0,2])
+# print(raw[1,1])
+# print(raw[2,1])
+# print(raw[0,1])
+# print(raw[0,2])
+# print(raw[0,:,:])
+# print(raw[:,0,:])
+# print(raw[:,:,0])
+# print(raw)
+# print(raw[0,0,0])
+# print(raw[0,0,1])
+# print(raw[0,0,2])
+# print(raw[:,1,:])
+# gray = np.array([[255,254,254],[255,254,254],[255,254,253]])
+noise,a,b = modify_rgb.point_classification(gray,raw,1,1,0)
+# for m in a:
+#     print(gray[m[0]][m[1]], end=" ")
+#     print(m, end=" ")ww
+# print()
+# for m in b:
+#     print(gray[m[0]][m[1]], end=" ")
+#     print(m, end=" ")
+# print()
+# print(avg_a, end=" ")
+# print(avg_b, end=" ")
+# print(avg_a - avg_b)
+# print()
+# print(noise)
+print(a)
+print(b)
+# print(np.array([[1,1,1],[2,2,2],[2,2,2]]))

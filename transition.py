@@ -4,7 +4,9 @@ import p6MyMarchingSquares
 import matplotlib.pyplot as plt
 import modify
 
-src = "blur15circle"
+# src = "blur15circle"
+src = "blur10line"
+# src = "blur15simple"
 # src = "blurblur"
 inpath = "D:\\experiment\\pic\\q\\"
 outpath = "D:\\out\\"

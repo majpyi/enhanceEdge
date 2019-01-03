@@ -93,8 +93,8 @@ array = [0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, \
          1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0]
 
 # image = cv.LoadImage('D://blurblur.jpg', 0)
-src = "blur10blur"
-image = np.loadtxt("D:\\cs_guodu"+src+".csv", dtype=np.int, delimiter=",", encoding='utf-8')
+src = "blur1041004"
+image = np.loadtxt("D:\\guodu"+src+".csv", dtype=np.int, delimiter=",", encoding='utf-8')
 
 
 # raw = cv.imread("D://"+src+".jpg")

@@ -31,7 +31,8 @@ for file in files:
     # np.savetxt(outpath + src + '__grayBil' + '.csv', raw2_Filter, fmt="%d", delimiter=',')
     #
     # raw2 = raw2_Filter
-    canny = cv2.Canny(raw, 10, 100)
+    # canny = cv2.Canny(raw, 5, 1)
+    canny = cv2.Canny(raw, 5, 50)
     # canny = cv2.Canny(raw, 5, 100)
     # cv2.imwrite(outpath + src + "__Canny" + ".jpg", canny)
     cv2.imwrite("D:\\out\\" + src + "__Canny" + ".jpg", canny)

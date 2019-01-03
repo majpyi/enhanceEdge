@@ -3,7 +3,7 @@ import cv2
 
 for i in range(5,16,5):
     # 主函数
-    src = "circle"
+    src = "41004"
     inpath = "D:\\experiment\\pic\\q\\"
     # outpath = "D:\\out\\"
     raw = cv2.imread(inpath + src + ".jpg")
