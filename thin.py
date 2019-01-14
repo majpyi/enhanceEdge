@@ -93,8 +93,10 @@ array = [0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, \
          1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0]
 
 # image = cv.LoadImage('D://blurblur.jpg', 0)
-src = "blur1041004"
-image = np.loadtxt("D:\\guodu"+src+".csv", dtype=np.int, delimiter=",", encoding='utf-8')
+# src = "blur1041004"
+src = "blur1041004ththth5noisenum1"
+# image = np.loadtxt("D:\\dilat.csv", dtype=np.int, delimiter=",", encoding='utf-8')
+image = np.loadtxt("D:\\out\\dilat\\"+src+".csv", dtype=np.int, delimiter=",", encoding='utf-8')
 
 
 # raw = cv.imread("D://"+src+".jpg")
@@ -107,5 +109,5 @@ iThin = Xihua(iTwo, array)
 # cv.imshow('iThin', iThin)
 
 
-cv.imwrite("D://thin//"+src+".jpg",iThin)
+cv.imwrite("D:\\out\\thin\\"+src+".jpg",iThin)
 # cv.waitKey(0)

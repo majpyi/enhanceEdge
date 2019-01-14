@@ -394,6 +394,34 @@ def point_classification(gray, rgb, i, j, count, num=8):
     return minn, a, b
 
 
+# 通过三通道计算像素点的区分度的绝对值
+def gradient_average_abs_rgb(gray, rgb,count, num=8):
+    re  = np.zeros((gray.shape[0],gray.shape[1]))
+    for k in range(1, gray.shape[0] - 1):
+        for l in range(1, gray.shape[1] - 1):
+            noise, a, b = point_classification(gray, rgb,k,l,count, num=8)
+            sum_a_0 = 0
+            sum_a_1 = 0
+            sum_a_2 = 0
+            sum_b_0 = 0
+            sum_b_1 = 0
+            sum_b_2 = 0
+            for i in a:
+                sum_a_0 += rgb[i[0]][i[1]][0]
+                sum_a_1 += rgb[i[0]][i[1]][1]
+                sum_a_2 += rgb[i[0]][i[1]][2]
+            for i in b:
+                sum_b_0 += rgb[i[0]][i[1]][0]
+                sum_b_1 += rgb[i[0]][i[1]][1]
+                sum_b_2 += rgb[i[0]][i[1]][2]
+            diffa = ((sum_a_0 / len(a) - sum_b_0 / len(b)) + (sum_a_1 / len(a) - sum_b_1 / len(b)) + (
+                        sum_a_2 / len(a) - sum_b_2 / len(b))) / 3
+            diffb = -((sum_a_0 / len(a) - sum_b_0 / len(b)) + (sum_a_1 / len(a) - sum_b_1 / len(b)) + (
+                        sum_a_2 / len(a) - sum_b_2 / len(b))) / 3
+            re[k,l] = abs(int(diffa))
+    return re
+
+
 ####################################################################
 ####################################################################10.19
 
@@ -516,136 +544,155 @@ def score_new(gray, rgb, count,th, num=8):
             total_noise.extend(noise)
             num_a = []
             num_b = []
+            sum_a_0 = 0
+            sum_a_1 = 0
+            sum_a_2 = 0
+            sum_b_0 = 0
+            sum_b_1 = 0
+            sum_b_2 = 0
             for i in a:
                 # num_a.append(gray[i[0]][i[1]])
                 sumrgb=0
-                for p in range(3):
-                    sumrgb+=rgb[i[0]][i[1]][p]
-                num_a.append(sumrgb)
+                # for p in range(3):
+                #     sumrgb+=rgb[i[0]][i[1]][p]
+                sum_a_0+=rgb[i[0]][i[1]][0]
+                sum_a_1+=rgb[i[0]][i[1]][1]
+                sum_a_2+=rgb[i[0]][i[1]][2]
+                # num_a.append(sumrgb)
             for i in b:
                 # num_b.append(gray[i[0]][i[1]])
                 sumrgb = 0
-                for p in range(3):
-                    sumrgb += rgb[i[0]][i[1]][p]
-                num_b.append(sumrgb)
-            avg_a = sum(num_a) / len(num_a)
-            avg_b = sum(num_b) / len(num_b)
-            avg_a = avg_a/3
-            avg_b = avg_b/3
-            if k == 16 and l == 8:
-                for m in a:
-                    print(gray[m[0]][m[1]], end=" ")
-                    print(m, end=" ")
-                print()
-                for m in b:
-                    print(gray[m[0]][m[1]], end=" ")
-                    print(m, end=" ")
-                print()
-                print(avg_a, end=" ")
-                print(avg_b, end=" ")
-                print(avg_a - avg_b)
-                print()
+                # for p in range(3):
+                #     sumrgb += rgb[i[0]][i[1]][p]
+                # num_b.append(sumrgb)
+                sum_b_0 += rgb[i[0]][i[1]][0]
+                sum_b_1 += rgb[i[0]][i[1]][1]
+                sum_b_2 += rgb[i[0]][i[1]][2]
+            # avg_a = sum(num_a) / len(num_a)
+            # avg_b = sum(num_b) / len(num_b)
+            # avg_a = avg_a/3
+            # avg_b = avg_b/3
+            # diff = (abs(sum_a_0-sum_b_0)+abs(sum_a_1-sum_b_1)+abs(sum_a_2-sum_b_2))/3
+            diffa = ((sum_a_0/len(a)-sum_b_0/len(b))+(sum_a_1/len(a)-sum_b_1/len(b))+(sum_a_2/len(a)-sum_b_2/len(b)))/3
+            diffb = -((sum_a_0/len(a)-sum_b_0/len(b))+(sum_a_1/len(a)-sum_b_1/len(b))+(sum_a_2/len(a)-sum_b_2/len(b)))/3
 
-            if k == 16 and l == 9:
-                for m in a:
-                    print(gray[m[0]][m[1]], end=" ")
-                    print(m, end=" ")
-                print()
-                for m in b:
-                    print(gray[m[0]][m[1]], end=" ")
-                    print(m, end=" ")
-                print()
-                print(avg_a, end=" ")
-                print(avg_b, end=" ")
-                print(avg_a - avg_b)
-                print()
 
-            if k == 16 and l == 10:
-                for m in a:
-                    print(gray[m[0]][m[1]], end=" ")
-                    print(m, end=" ")
-                print()
-                for m in b:
-                    print(gray[m[0]][m[1]], end=" ")
-                    print(m, end=" ")
-                print()
-                print(avg_a, end=" ")
-                print(avg_b, end=" ")
-                print(avg_a - avg_b)
-                print()
 
-            if k == 17 and l == 8:
-                for m in a:
-                    print(gray[m[0]][m[1]], end=" ")
-                    print(m, end=" ")
-                print()
-                for m in b:
-                    print(gray[m[0]][m[1]], end=" ")
-                    print(m, end=" ")
-                print()
-                print(avg_a, end=" ")
-                print(avg_b, end=" ")
-                print(avg_a - avg_b)
-                print()
-
-            if k == 17 and l == 10:
-                for m in a:
-                    print(gray[m[0]][m[1]], end=" ")
-                    print(m, end=" ")
-                print()
-                for m in b:
-                    print(gray[m[0]][m[1]], end=" ")
-                    print(m, end=" ")
-                print()
-                print(avg_a, end=" ")
-                print(avg_b, end=" ")
-                print(avg_a - avg_b)
-                print()
-
-            if k == 18 and l == 8:
-                for m in a:
-                    print(gray[m[0]][m[1]], end=" ")
-                    print(m, end=" ")
-                print()
-                for m in b:
-                    print(gray[m[0]][m[1]], end=" ")
-                    print(m, end=" ")
-                print()
-                print(avg_a, end=" ")
-                print(avg_b, end=" ")
-                print(avg_a - avg_b)
-                print()
-
-            if k == 18 and l == 9:
-                for m in a:
-                    print(gray[m[0]][m[1]], end=" ")
-                    print(m, end=" ")
-                print()
-                for m in b:
-                    print(gray[m[0]][m[1]], end=" ")
-                    print(m, end=" ")
-                print()
-                print(avg_a, end=" ")
-                print(avg_b, end=" ")
-                print(avg_a - avg_b)
-                print()
-
-            if k == 18 and l == 10:
-                for m in a:
-                    print(gray[m[0]][m[1]], end=" ")
-                    print(m, end=" ")
-                print()
-                for m in b:
-                    print(gray[m[0]][m[1]], end=" ")
-                    print(m, end=" ")
-                print()
-                print(avg_a, end=" ")
-                print(avg_b, end=" ")
-                print(avg_a - avg_b)
-                print()
+            # if k == 16 and l == 8:
+            #     for m in a:
+            #         print(gray[m[0]][m[1]], end=" ")
+            #         print(m, end=" ")
+            #     print()
+            #     for m in b:
+            #         print(gray[m[0]][m[1]], end=" ")
+            #         print(m, end=" ")
+            #     print()
+            #     print(avg_a, end=" ")
+            #     print(avg_b, end=" ")
+            #     print(avg_a - avg_b)
+            #     print()
+            #
+            # if k == 16 and l == 9:
+            #     for m in a:
+            #         print(gray[m[0]][m[1]], end=" ")
+            #         print(m, end=" ")
+            #     print()
+            #     for m in b:
+            #         print(gray[m[0]][m[1]], end=" ")
+            #         print(m, end=" ")
+            #     print()
+            #     print(avg_a, end=" ")
+            #     print(avg_b, end=" ")
+            #     print(avg_a - avg_b)
+            #     print()
+            #
+            # if k == 16 and l == 10:
+            #     for m in a:
+            #         print(gray[m[0]][m[1]], end=" ")
+            #         print(m, end=" ")
+            #     print()
+            #     for m in b:
+            #         print(gray[m[0]][m[1]], end=" ")
+            #         print(m, end=" ")
+            #     print()
+            #     print(avg_a, end=" ")
+            #     print(avg_b, end=" ")
+            #     print(avg_a - avg_b)
+            #     print()
+            #
+            # if k == 17 and l == 8:
+            #     for m in a:
+            #         print(gray[m[0]][m[1]], end=" ")
+            #         print(m, end=" ")
+            #     print()
+            #     for m in b:
+            #         print(gray[m[0]][m[1]], end=" ")
+            #         print(m, end=" ")
+            #     print()
+            #     print(avg_a, end=" ")
+            #     print(avg_b, end=" ")
+            #     print(avg_a - avg_b)
+            #     print()
+            #
+            # if k == 17 and l == 10:
+            #     for m in a:
+            #         print(gray[m[0]][m[1]], end=" ")
+            #         print(m, end=" ")
+            #     print()
+            #     for m in b:
+            #         print(gray[m[0]][m[1]], end=" ")
+            #         print(m, end=" ")
+            #     print()
+            #     print(avg_a, end=" ")
+            #     print(avg_b, end=" ")
+            #     print(avg_a - avg_b)
+            #     print()
+            #
+            # if k == 18 and l == 8:
+            #     for m in a:
+            #         print(gray[m[0]][m[1]], end=" ")
+            #         print(m, end=" ")
+            #     print()
+            #     for m in b:
+            #         print(gray[m[0]][m[1]], end=" ")
+            #         print(m, end=" ")
+            #     print()
+            #     print(avg_a, end=" ")
+            #     print(avg_b, end=" ")
+            #     print(avg_a - avg_b)
+            #     print()
+            #
+            # if k == 18 and l == 9:
+            #     for m in a:
+            #         print(gray[m[0]][m[1]], end=" ")
+            #         print(m, end=" ")
+            #     print()
+            #     for m in b:
+            #         print(gray[m[0]][m[1]], end=" ")
+            #         print(m, end=" ")
+            #     print()
+            #     print(avg_a, end=" ")
+            #     print(avg_b, end=" ")
+            #     print(avg_a - avg_b)
+            #     print()
+            #
+            # if k == 18 and l == 10:
+            #     for m in a:
+            #         print(gray[m[0]][m[1]], end=" ")
+            #         print(m, end=" ")
+            #     print()
+            #     for m in b:
+            #         print(gray[m[0]][m[1]], end=" ")
+            #         print(m, end=" ")
+            #     print()
+            #     print(avg_a, end=" ")
+            #     print(avg_b, end=" ")
+            #     print(avg_a - avg_b)
+            #     print()
 
             # if (min(num_a) >= max(num_b)) and (abs(avg_a - avg_b) > th):  # a区的点设为大边点, b区为小边点, 5为假设！！！！！！！！！！！！！！！！！
-            if avg_a - avg_b > th:  # a区的点设为大边点, b区为小边点, 5为假设！！！！！！！！！！！！！！！！！
+            # if avg_a - avg_b > th:  # a区的点设为大边点, b区为小边点, 5为假设！！！！！！！！！！！！！！！！！
+            if diffa > th:  # a区的点设为大边点, b区为小边点, 5为假设！！！！！！！！！！！！！！！！！
                 for i in a:
                     scores[i[0]][i[1]] = scores[i[0]][i[1]] + 100
                     if i[0] == 17 and i[1] == 9:
@@ -655,7 +702,8 @@ def score_new(gray, rgb, count,th, num=8):
                     if i[0] == 17 and i[1] == 9:
                         print("小")
             # if (min(num_b) >= max(num_a)) and (abs(avg_b - avg_a) > th):  # b区的点设为大边点，a区为小边点
-            elif avg_b - avg_a > th:  # b区的点设为大边点，a区为小边点
+            # elif avg_b - avg_a > th:  # b区的点设为大边点，a区为小边点
+            elif diffb > th:  # b区的点设为大边点，a区为小边点
                 for i in a:
                     scores[i[0]][i[1]] = scores[i[0]][i[1]] + 10
                     if i[0] == 17 and i[1] == 9:
@@ -664,11 +712,11 @@ def score_new(gray, rgb, count,th, num=8):
                     scores[i[0]][i[1]] = scores[i[0]][i[1]] + 100
                     if i[0] == 17 and i[1] == 9:
                         print("大")
-            elif (((min(num_a) >= max(num_b)) and (abs(avg_a - avg_b) <= th)) | (
-                    (min(num_b) >= max(num_a)) and (abs(avg_b - avg_a) <= th)) | (
-                    (max(num_a) >= min(num_b)) and (min(num_b) >= min(num_a))) | (
-                    (max(num_b) >= min(num_a)) and (min(num_a) >= min(num_b)))):  # a,b算内部点，
-                # else:
+            # elif (((min(num_a) >= max(num_b)) and (abs(avg_a - avg_b) <= th)) | (
+            #         (min(num_b) >= max(num_a)) and (abs(avg_b - avg_a) <= th)) | (
+            #         (max(num_a) >= min(num_b)) and (min(num_b) >= min(num_a))) | (
+            #         (max(num_b) >= min(num_a)) and (min(num_a) >= min(num_b)))):  # a,b算内部点，
+            else:
                 for i in a:
                     scores[i[0]][i[1]] = scores[i[0]][i[1]] + 1.0
                 for i in b:

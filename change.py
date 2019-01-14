@@ -7,6 +7,8 @@ import cv2
 import matplotlib.pyplot as plt
 # from PIL import Image
 from pylab import *
+import modify_rgb
+
 
 #  原始中心点左侧的六个点,和他的上下两个点一共八个点
 nx = [-1, -1, -1, 0, 0, +1, +1, +1]
@@ -508,6 +510,40 @@ def gradient_average_abs(raws, x, y):
                 num_b += 1
             re[i, j] = abs(sum_a / num_a - sum_b / num_b)
     return re
+
+
+# 通过三通道计算像素点的区分度的绝对值
+# def gradient_average_abs_rgb(raws, x, y,count):
+#     re = np.zeros((x, y))
+#     for i in range(1, x - 1):
+#         for j in range(1, y - 1):
+#             noise, a, b = modify_rgb.point_classification(raws, i, j, 2)
+#             sum_a = 0
+#             num_a = 0
+#             sum_b = 0
+#             num_b = 0
+#             min_a = 255
+#             min_b = 255
+#             for k in range(len(a)):
+#                 # point_a.append(raws[i + a[k][0] - 1, j + a[k][1] - 1])
+#                 # point_a.append(raws[a[k][0] - 1, a[k][1] - 1])
+#                 # sum_a += raws[a[k][0] - 1, a[k][1] - 1]
+#                 sum_a += raws[a[k][0], a[k][1]]
+#                 num_a += 1
+#
+#             for k in range(len(b)):
+#                 # point_b.append(raws[i + b[k][0] - 1, j + b[k][1] - 1])
+#                 # point_b.append(raws[b[k][0] - 1, b[k][1] - 1])
+#                 # sum_b += raws[b[k][0] - 1, b[k][1] - 1]
+#                 sum_b += raws[b[k][0], b[k][1]]
+#                 num_b += 1
+#             re[i, j] = abs(sum_a / num_a - sum_b / num_b)
+    return re
+
+
+
+
+
 
 
 xx_tag = [-1, -1, -1, 0, +1, +1, +1, 0, 0]

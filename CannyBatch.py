@@ -9,7 +9,7 @@ from PIL import Image
 # inpath = "D:\\experiment\\pic\\q\\"
 # inpath = "D:\\experiment\\pic\\q\\"
 inpath = "D:\\in\\canny\\"
-outpath = "D:\\out\\"
+outpath = "D:\\out\\canny\\"
 
 files = os.listdir(inpath)
 for file in files:
@@ -32,9 +32,12 @@ for file in files:
     #
     # raw2 = raw2_Filter
     # canny = cv2.Canny(raw, 5, 1)
-    canny = cv2.Canny(raw, 5, 50)
-    # canny = cv2.Canny(raw, 5, 100)
+    # canny = cv2.Canny(raw, 5, 50)
+    th1 = 50
+    th2 = 100
+    canny = cv2.Canny(raw, 50, 100)
+    # canny = cv2.Canny(raw, 50, 100)
     # cv2.imwrite(outpath + src + "__Canny" + ".jpg", canny)
-    cv2.imwrite("D:\\out\\" + src + "__Canny" + ".jpg", canny)
+    cv2.imwrite(outpath + src + "__Canny th1"+str(th1)+" th2"+str(th2)+".jpg", canny)
     # img = Image.open(inpath + src + ".jpg")
     # print(img.size)

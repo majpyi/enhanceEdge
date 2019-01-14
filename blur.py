@@ -3,7 +3,8 @@ import cv2
 
 for i in range(5,16,5):
     # 主函数
-    src = "41004"
+    # src = "41004"
+    src = "113016"
     inpath = "D:\\experiment\\pic\\q\\"
     # outpath = "D:\\out\\"
     raw = cv2.imread(inpath + src + ".jpg")
