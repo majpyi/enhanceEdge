@@ -46,15 +46,27 @@ def nothing(x):
     pass
 
 
-src = "blur1041004ththth5noisenum1"
+# src = "blur1041004ththth5noisenum1"
+# src = "blur541004ththth10noisenum1"
+src = "blur541004ththth10noisenum1"
+# src = "41004ththth5noisenum1"
+# src = "blur541004"
 # img = cv2.imread("D:\\experiment\\pic\\q\\"+src+".jpg")
 
 # src = "blur1041004ththth5noisenum1"
 img = cv2.imread("D:\\out\\tranrgb\\"+src+".jpg")
 raw2 = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+print(type(raw2))
+print(type(raw2[0,0]))
+# raw2 = np.loadtxt("D:\\out\\try\\guodu1____L0.csv", dtype=np.int, delimiter=",", encoding='utf-8')
+raw2 = np.loadtxt("D:\\out\\try\\guodu1____L0.csv",dtype=np.uint8, delimiter=",", encoding='utf-8')
+print(type(raw2))
+print(type(raw2[0,0]))
+
+
 img = raw2
 
-si = 0
+si = 2
 
 kernel = np.ones((si, si), np.uint8)
 # 根据滚动条数据确定卷积核大小

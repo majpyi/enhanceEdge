@@ -8,7 +8,8 @@ import modify
 # src = "blur15simpleline"
 # src = "rgbgray"
 # src = "41004"
-src = "blur1041004"
+src = "blur541004"
+# src = "blur108068"
 # src = "blur5135069"
 # src = "blur10113016"
 inpath = "D:\\experiment\\pic\\q\\"
@@ -27,7 +28,7 @@ np.savetxt("D:\\raw2" + src + ".csv", raw2_Filter, fmt="%d", delimiter=',')
 # for noise_num in range(4):
 #     for th in range(1,7):
 noise_num = 1
-th =5
+th =10
 np.savetxt(outpath+"tranrgbraw2_Filter" + src +"ththth"+str(th)+"noisenum"+str(noise_num)+".csv", raw2_Filter, fmt="%d", delimiter=',')
 
 a, b, guodu, d, e = modify_rgb.noise_array(raw2_Filter, raw_Filter,noise_num,th)

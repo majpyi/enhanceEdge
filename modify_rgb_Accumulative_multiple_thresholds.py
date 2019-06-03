@@ -1,3 +1,4 @@
+# Accumulative multiple thresholds
 import numpy as np
 import time
 
@@ -415,50 +416,10 @@ def gradient_average_abs_rgb(gray, rgb, count, num=8):
 				sum_b_1 += rgb[i[0]][i[1]][1]
 				sum_b_2 += rgb[i[0]][i[1]][2]
 			diffa = ((sum_a_0 / len(a) - sum_b_0 / len(b)) + (sum_a_1 / len(a) - sum_b_1 / len(b)) + (
-					sum_a_2 / len(a) - sum_b_2 / len(b))) / 3
+							sum_a_2 / len(a) - sum_b_2 / len(b))) / 3
 			diffb = -((sum_a_0 / len(a) - sum_b_0 / len(b)) + (sum_a_1 / len(a) - sum_b_1 / len(b)) + (
-					sum_a_2 / len(a) - sum_b_2 / len(b))) / 3
+							sum_a_2 / len(a) - sum_b_2 / len(b))) / 3
 			re[k, l] = abs(int(diffa))
-	return re
-
-
-# 通过三通道计算像素点的区分度的绝对值
-def gradient_average_rgb(gray, rgb, count, num=8):
-	re = np.zeros((gray.shape[0], gray.shape[1]))
-	for k in range(1, gray.shape[0] - 1):
-		for l in range(1, gray.shape[1] - 1):
-			noise, a, b = point_classification(gray, rgb, k, l, count, num=8)
-			gray_a = 0
-			gray_b = 0
-			sum_a_0 = 0
-			sum_a_1 = 0
-			sum_a_2 = 0
-			sum_b_0 = 0
-			sum_b_1 = 0
-			sum_b_2 = 0
-			for i in a:
-				gray_a += gray[i[0]][i[1]]
-				sum_a_0 += rgb[i[0]][i[1]][0]
-				sum_a_1 += rgb[i[0]][i[1]][1]
-				sum_a_2 += rgb[i[0]][i[1]][2]
-			for i in b:
-				gray_b += gray[i[0]][i[1]]
-				sum_b_0 += rgb[i[0]][i[1]][0]
-				sum_b_1 += rgb[i[0]][i[1]][1]
-				sum_b_2 += rgb[i[0]][i[1]][2]
-			diffa = ((sum_a_0 / len(a) - sum_b_0 / len(b)) + (sum_a_1 / len(a) - sum_b_1 / len(b)) + (
-					sum_a_2 / len(a) - sum_b_2 / len(b))) / 3
-			if abs(gray_a / len(a) - gray[k, l]) < abs(gray_b / len(b) - gray[k, l]):
-				if gray_a / len(a) >= gray_b / len(b):
-					re[k, l] = abs(int(diffa))
-				else:
-					re[k, l] = -abs(int(diffa))
-			if abs(gray_a / len(a) - gray[k, l]) > abs(gray_b / len(b) - gray[k, l]):
-				if gray_a / len(a) >= gray_b / len(b):
-					re[k, l] = -abs(int(diffa))
-				else:
-					re[k, l] = abs(int(diffa))
-	# re[k, l] = abs(int(diffa))
 	return re
 
 
@@ -507,9 +468,9 @@ def score(gray, rgb, count, num=8):
 					scores[i[0]][i[1]] = scores[i[0]][i[1]] + 100
 			#                     mark[k][l][0].append(i)
 			elif (((min(num_a) >= max(num_b)) & (max(num_a) - min(num_b) <= th)) | (
-					(min(num_b) >= max(num_a)) & (max(num_b) - min(num_a) <= th)) | (
-					      (max(num_a) >= min(num_b)) & (min(num_b) >= min(num_a))) | (
-					      (max(num_b) >= min(num_a)) & (min(num_a) >= min(num_b)))):  # a,b算内部点，
+							(min(num_b) >= max(num_a)) & (max(num_b) - min(num_a) <= th)) | (
+							      (max(num_a) >= min(num_b)) & (min(num_b) >= min(num_a))) | (
+							      (max(num_b) >= min(num_a)) & (min(num_a) >= min(num_b)))):  # a,b算内部点，
 				for i in a:
 					#                     print(scores[i[0]][i[1]])
 					scores[i[0]][i[1]] = scores[i[0]][i[1]] + 1.0
@@ -523,245 +484,247 @@ def score(gray, rgb, count, num=8):
 # 参数：灰度矩阵图,每次取噪声个数
 # 得到：噪声矩阵，积分矩阵, 矛盾点二值矩阵,初始大边点二值矩阵,初始小边点二值矩阵
 # 其中噪声矩阵是每个像素点被判断为噪声点的次数的矩阵
-def noise_array(gray, rgb, ccount, th, num=8):
+def noise_array(gray, rgb, ccount, th1, th2, num=8):
 	#     count=0
 	length = gray.shape[0]
 	width = gray.shape[1]
-	noise = np.zeros((length, width))  # 初始化为0
+	noise = np.zeros((length, width, th2 - th1))  # 初始化为0
 
-	start1 = time.clock()
-	score_array_1 = score_new(gray, rgb, ccount, th, num)[0]  # 有值
+	# start1 = time.clock()
+	score_array_1 = score_new(gray, rgb, ccount, th1, th2, num)[0]  # 有值
 
 	# np.savetxt("D:\\ score_array_1.csv", score_array_1, fmt="%d", delimiter=',')
-
 	# end1 = time.clock()
-
 	# print(str(end1 - start1))
-
 	# start2 = time.clock()
 	#     print(score_array_1)
-	score_array_2 = np.zeros((length, width, 6))  # 全0
-	contradiction_array = np.zeros((length, width))
-	edge_big = np.zeros((length, width))
-	inner = np.zeros((length, width))
-	edge_small = np.zeros((length, width))
-	for i in range(1, length - 1):
-		for j in range(1, width - 1):
-			#             print(i,j)
-			score_array_2[i][j][0] = score_array_1[i][j] // 100  # [0, 0, 0]中第一个值 大边点
-			score_array_2[i][j][1] = score_array_1[i][j] // 10 % 10  # 小边点
-			score_array_2[i][j][2] = score_array_1[i][j] % 10  # 内部点
-			score_array_2[i][j][5] = list(score_array_2[i][j]).index(max(score_array_2[i][j][0:3]))  # 三个系数哪个大，哪个做标记
-			if (score_array_2[i][j][0] > 0) & (score_array_2[i][j][1] == 0):  # 大边点
-				score_array_2[i][j][3] = 2
-				edge_big[i][j] = 1
-			if (score_array_2[i][j][1] > 0) & (score_array_2[i][j][0] == 0):  # 小边点
-				score_array_2[i][j][3] = 1
-				edge_small[i][j] = 1
-			if (score_array_2[i][j][1] == 0) & (score_array_2[i][j][0] == 0):
-				inner[i][j] = 1
-			if score_array_2[i][j][0] * score_array_2[i][j][1] > 0:
-				contradiction_array[i][j] = 1
-				score_array_2[i][j][4] = 1  # 标记是否为矛盾点
-			else:
-				contradiction_array[i][j] = 0
-			count_noise = num - score_array_2[i][j][0] - score_array_2[i][j][1] - score_array_2[i][j][2]
-			noise[i][j] = count_noise
+	score_array_2 = np.zeros((length, width, 6, th2 - th1))  # 全0
+
+	contradiction_array = np.zeros((length, width, th2 - th1))
+	edge_big = np.zeros((length, width, th2 - th1))
+	edge_small = np.zeros((length, width, th2 - th1))
+
+	for th in range(th2 - th1):
+		for i in range(1, length - 1):
+			for j in range(1, width - 1):
+				#             print(i,j)
+				score_array_2[i][j][0][th] = score_array_1[i][j][th] // 100  # [0, 0, 0]中第一个值 大边点
+				score_array_2[i][j][1][th] = score_array_1[i][j][th] // 10 % 10  # 小边点
+				score_array_2[i][j][2][th] = score_array_1[i][j][th] % 10  # 内部点
+				# score_array_2[i][j][5][th] = list(score_array_2[i][j][th]).index(
+				# 	max(score_array_2[i][j][0:3][th]))  # 三个系数哪个大，哪个做标记
+				if (score_array_2[i][j][0][th] > 0) & (score_array_2[i][j][1][th] == 0):  # 大边点
+					score_array_2[i][j][3][th] = 2
+					edge_big[i][j][th] = 1
+				if (score_array_2[i][j][1][th] > 0) & (score_array_2[i][j][0][th] == 0):  # 小边点
+					score_array_2[i][j][3][th] = 1
+					edge_small[i][j][th] = 1
+				if score_array_2[i][j][0][th] * score_array_2[i][j][1][th] > 0:
+					contradiction_array[i][j][th] = 1
+					score_array_2[i][j][4][th] = 1  # 标记是否为矛盾点
+				else:
+					contradiction_array[i][j][th] = 0
+				count_noise = num - score_array_2[i][j][0][th] - score_array_2[i][j][1][th] - score_array_2[i][j][2][th]
+				noise[i][j][th] = count_noise
 	#             if noise[i][j]<0:
 	#                 count+=1
 	#                 print( score_array_2[i][j])
 	# end2 = time.clock()
 	# print(str(end2 - start2))
 
-	return noise, inner, contradiction_array, edge_big, edge_small  # ,count
+	return noise, score_array_2, contradiction_array, edge_big, edge_small  # ,count
 
 
 # 遍历灰度矩阵并计数标记，噪声点+0，内部点+1，小边点+10，大边点+100,num为邻域个数,count为每次取噪声个数
-def score_new(gray, rgb, count, th, num=8):
+def score_new(gray, rgb, count, th1, th2, num=8):
 	# th = 5
-	scores = np.zeros((gray.shape[0], gray.shape[1]))  # 初始化为0
+	scores = np.zeros((gray.shape[0], gray.shape[1], th2 - th1))  # 初始化为0
 	total_noise = []
-	for k in range(1, gray.shape[0] - 1):
-		for l in range(1, gray.shape[1] - 1):
-			noise, a, b = point_classification(gray, rgb, k, l, count, num)  # 根据中心像素点得到八邻域中的噪声，a,b区坐标
-			total_noise.extend(noise)
-			num_a = []
-			num_b = []
-			sum_a_0 = 0
-			sum_a_1 = 0
-			sum_a_2 = 0
-			sum_b_0 = 0
-			sum_b_1 = 0
-			sum_b_2 = 0
-			for i in a:
-				# num_a.append(gray[i[0]][i[1]])
-				sumrgb = 0
-				# for p in range(3):
-				#     sumrgb+=rgb[i[0]][i[1]][p]
-				sum_a_0 += rgb[i[0]][i[1]][0]
-				sum_a_1 += rgb[i[0]][i[1]][1]
-				sum_a_2 += rgb[i[0]][i[1]][2]
-			# num_a.append(sumrgb)
-			for i in b:
-				# num_b.append(gray[i[0]][i[1]])
-				sumrgb = 0
-				# for p in range(3):
-				#     sumrgb += rgb[i[0]][i[1]][p]
-				# num_b.append(sumrgb)
-				sum_b_0 += rgb[i[0]][i[1]][0]
-				sum_b_1 += rgb[i[0]][i[1]][1]
-				sum_b_2 += rgb[i[0]][i[1]][2]
-			# avg_a = sum(num_a) / len(num_a)
-			# avg_b = sum(num_b) / len(num_b)
-			# avg_a = avg_a/3
-			# avg_b = avg_b/3
-			# diff = (abs(sum_a_0-sum_b_0)+abs(sum_a_1-sum_b_1)+abs(sum_a_2-sum_b_2))/3
-			diffa = ((sum_a_0 / len(a) - sum_b_0 / len(b)) + (sum_a_1 / len(a) - sum_b_1 / len(b)) + (
-					sum_a_2 / len(a) - sum_b_2 / len(b))) / 3
-			diffb = -((sum_a_0 / len(a) - sum_b_0 / len(b)) + (sum_a_1 / len(a) - sum_b_1 / len(b)) + (
-					sum_a_2 / len(a) - sum_b_2 / len(b))) / 3
+	layer = 0
 
-			# if k == 16 and l == 8:
-			#     for m in a:
-			#         print(gray[m[0]][m[1]], end=" ")
-			#         print(m, end=" ")
-			#     print()
-			#     for m in b:
-			#         print(gray[m[0]][m[1]], end=" ")
-			#         print(m, end=" ")
-			#     print()
-			#     print(avg_a, end=" ")
-			#     print(avg_b, end=" ")
-			#     print(avg_a - avg_b)
-			#     print()
-			#
-			# if k == 16 and l == 9:
-			#     for m in a:
-			#         print(gray[m[0]][m[1]], end=" ")
-			#         print(m, end=" ")
-			#     print()
-			#     for m in b:
-			#         print(gray[m[0]][m[1]], end=" ")
-			#         print(m, end=" ")
-			#     print()
-			#     print(avg_a, end=" ")
-			#     print(avg_b, end=" ")
-			#     print(avg_a - avg_b)
-			#     print()
-			#
-			# if k == 16 and l == 10:
-			#     for m in a:
-			#         print(gray[m[0]][m[1]], end=" ")
-			#         print(m, end=" ")
-			#     print()
-			#     for m in b:
-			#         print(gray[m[0]][m[1]], end=" ")
-			#         print(m, end=" ")
-			#     print()
-			#     print(avg_a, end=" ")
-			#     print(avg_b, end=" ")
-			#     print(avg_a - avg_b)
-			#     print()
-			#
-			# if k == 17 and l == 8:
-			#     for m in a:
-			#         print(gray[m[0]][m[1]], end=" ")
-			#         print(m, end=" ")
-			#     print()
-			#     for m in b:
-			#         print(gray[m[0]][m[1]], end=" ")
-			#         print(m, end=" ")
-			#     print()
-			#     print(avg_a, end=" ")
-			#     print(avg_b, end=" ")
-			#     print(avg_a - avg_b)
-			#     print()
-			#
-			# if k == 17 and l == 10:
-			#     for m in a:
-			#         print(gray[m[0]][m[1]], end=" ")
-			#         print(m, end=" ")
-			#     print()
-			#     for m in b:
-			#         print(gray[m[0]][m[1]], end=" ")
-			#         print(m, end=" ")
-			#     print()
-			#     print(avg_a, end=" ")
-			#     print(avg_b, end=" ")
-			#     print(avg_a - avg_b)
-			#     print()
-			#
-			# if k == 18 and l == 8:
-			#     for m in a:
-			#         print(gray[m[0]][m[1]], end=" ")
-			#         print(m, end=" ")
-			#     print()
-			#     for m in b:
-			#         print(gray[m[0]][m[1]], end=" ")
-			#         print(m, end=" ")
-			#     print()
-			#     print(avg_a, end=" ")
-			#     print(avg_b, end=" ")
-			#     print(avg_a - avg_b)
-			#     print()
-			#
-			# if k == 18 and l == 9:
-			#     for m in a:
-			#         print(gray[m[0]][m[1]], end=" ")
-			#         print(m, end=" ")
-			#     print()
-			#     for m in b:
-			#         print(gray[m[0]][m[1]], end=" ")
-			#         print(m, end=" ")
-			#     print()
-			#     print(avg_a, end=" ")
-			#     print(avg_b, end=" ")
-			#     print(avg_a - avg_b)
-			#     print()
-			#
-			# if k == 18 and l == 10:
-			#     for m in a:
-			#         print(gray[m[0]][m[1]], end=" ")
-			#         print(m, end=" ")
-			#     print()
-			#     for m in b:
-			#         print(gray[m[0]][m[1]], end=" ")
-			#         print(m, end=" ")
-			#     print()
-			#     print(avg_a, end=" ")
-			#     print(avg_b, end=" ")
-			#     print(avg_a - avg_b)
-			#     print()
+	for th in range(th1, th2):
+		for k in range(1, gray.shape[0] - 1):
+			for l in range(1, gray.shape[1] - 1):
+				noise, a, b = point_classification(gray, rgb, k, l, count, num)  # 根据中心像素点得到八邻域中的噪声，a,b区坐标
+				total_noise.extend(noise)
+				num_a = []
+				num_b = []
+				sum_a_0 = 0
+				sum_a_1 = 0
+				sum_a_2 = 0
+				sum_b_0 = 0
+				sum_b_1 = 0
+				sum_b_2 = 0
+				for i in a:
+					# num_a.append(gray[i[0]][i[1]])
+					sumrgb = 0
+					# for p in range(3):
+					#     sumrgb+=rgb[i[0]][i[1]][p]
+					sum_a_0 += rgb[i[0]][i[1]][0]
+					sum_a_1 += rgb[i[0]][i[1]][1]
+					sum_a_2 += rgb[i[0]][i[1]][2]
+				# num_a.append(sumrgb)
+				for i in b:
+					# num_b.append(gray[i[0]][i[1]])
+					sumrgb = 0
+					# for p in range(3):
+					#     sumrgb += rgb[i[0]][i[1]][p]
+					# num_b.append(sumrgb)
+					sum_b_0 += rgb[i[0]][i[1]][0]
+					sum_b_1 += rgb[i[0]][i[1]][1]
+					sum_b_2 += rgb[i[0]][i[1]][2]
+				# avg_a = sum(num_a) / len(num_a)
+				# avg_b = sum(num_b) / len(num_b)
+				# avg_a = avg_a/3
+				# avg_b = avg_b/3
+				# diff = (abs(sum_a_0-sum_b_0)+abs(sum_a_1-sum_b_1)+abs(sum_a_2-sum_b_2))/3
+				diffa = ((sum_a_0 / len(a) - sum_b_0 / len(b)) + (sum_a_1 / len(a) - sum_b_1 / len(b)) + (
+								sum_a_2 / len(a) - sum_b_2 / len(b))) / 3
+				diffb = -((sum_a_0 / len(a) - sum_b_0 / len(b)) + (sum_a_1 / len(a) - sum_b_1 / len(b)) + (
+								sum_a_2 / len(a) - sum_b_2 / len(b))) / 3
 
-			# if (min(num_a) >= max(num_b)) and (abs(avg_a - avg_b) > th):  # a区的点设为大边点, b区为小边点, 5为假设！！！！！！！！！！！！！！！！！
-			# if avg_a - avg_b > th:  # a区的点设为大边点, b区为小边点, 5为假设！！！！！！！！！！！！！！！！！
-			if diffa > th:  # a区的点设为大边点, b区为小边点, 5为假设！！！！！！！！！！！！！！！！！
-				for i in a:
-					scores[i[0]][i[1]] = scores[i[0]][i[1]] + 100
-					if i[0] == 17 and i[1] == 9:
-						print("大")
-				for i in b:
-					scores[i[0]][i[1]] = scores[i[0]][i[1]] + 10
-					if i[0] == 17 and i[1] == 9:
-						print("小")
-			# if (min(num_b) >= max(num_a)) and (abs(avg_b - avg_a) > th):  # b区的点设为大边点，a区为小边点
-			# elif avg_b - avg_a > th:  # b区的点设为大边点，a区为小边点
-			elif diffb > th:  # b区的点设为大边点，a区为小边点
-				for i in a:
-					scores[i[0]][i[1]] = scores[i[0]][i[1]] + 10
-					if i[0] == 17 and i[1] == 9:
-						print("小")
-				for i in b:
-					scores[i[0]][i[1]] = scores[i[0]][i[1]] + 100
-					if i[0] == 17 and i[1] == 9:
-						print("大")
-			# elif (((min(num_a) >= max(num_b)) and (abs(avg_a - avg_b) <= th)) | (
-			#         (min(num_b) >= max(num_a)) and (abs(avg_b - avg_a) <= th)) | (
-			#         (max(num_a) >= min(num_b)) and (min(num_b) >= min(num_a))) | (
-			#         (max(num_b) >= min(num_a)) and (min(num_a) >= min(num_b)))):  # a,b算内部点，
-			else:
-				for i in a:
-					scores[i[0]][i[1]] = scores[i[0]][i[1]] + 1.0
-				for i in b:
-					scores[i[0]][i[1]] = scores[i[0]][i[1]] + 1.0
+				# if k == 16 and l == 8:
+				#     for m in a:
+				#         print(gray[m[0]][m[1]], end=" ")
+				#         print(m, end=" ")
+				#     print()
+				#     for m in b:
+				#         print(gray[m[0]][m[1]], end=" ")
+				#         print(m, end=" ")
+				#     print()
+				#     print(avg_a, end=" ")
+				#     print(avg_b, end=" ")
+				#     print(avg_a - avg_b)
+				#     print()
+				#
+				# if k == 16 and l == 9:
+				#     for m in a:
+				#         print(gray[m[0]][m[1]], end=" ")
+				#         print(m, end=" ")
+				#     print()
+				#     for m in b:
+				#         print(gray[m[0]][m[1]], end=" ")
+				#         print(m, end=" ")
+				#     print()
+				#     print(avg_a, end=" ")
+				#     print(avg_b, end=" ")
+				#     print(avg_a - avg_b)
+				#     print()
+				#
+				# if k == 16 and l == 10:
+				#     for m in a:
+				#         print(gray[m[0]][m[1]], end=" ")
+				#         print(m, end=" ")
+				#     print()
+				#     for m in b:
+				#         print(gray[m[0]][m[1]], end=" ")
+				#         print(m, end=" ")
+				#     print()
+				#     print(avg_a, end=" ")
+				#     print(avg_b, end=" ")
+				#     print(avg_a - avg_b)
+				#     print()
+				#
+				# if k == 17 and l == 8:
+				#     for m in a:
+				#         print(gray[m[0]][m[1]], end=" ")
+				#         print(m, end=" ")
+				#     print()
+				#     for m in b:
+				#         print(gray[m[0]][m[1]], end=" ")
+				#         print(m, end=" ")
+				#     print()
+				#     print(avg_a, end=" ")
+				#     print(avg_b, end=" ")
+				#     print(avg_a - avg_b)
+				#     print()
+				#
+				# if k == 17 and l == 10:
+				#     for m in a:
+				#         print(gray[m[0]][m[1]], end=" ")
+				#         print(m, end=" ")
+				#     print()
+				#     for m in b:
+				#         print(gray[m[0]][m[1]], end=" ")
+				#         print(m, end=" ")
+				#     print()
+				#     print(avg_a, end=" ")
+				#     print(avg_b, end=" ")
+				#     print(avg_a - avg_b)
+				#     print()
+				#
+				# if k == 18 and l == 8:
+				#     for m in a:
+				#         print(gray[m[0]][m[1]], end=" ")
+				#         print(m, end=" ")
+				#     print()
+				#     for m in b:
+				#         print(gray[m[0]][m[1]], end=" ")
+				#         print(m, end=" ")
+				#     print()
+				#     print(avg_a, end=" ")
+				#     print(avg_b, end=" ")
+				#     print(avg_a - avg_b)
+				#     print()
+				#
+				# if k == 18 and l == 9:
+				#     for m in a:
+				#         print(gray[m[0]][m[1]], end=" ")
+				#         print(m, end=" ")
+				#     print()
+				#     for m in b:
+				#         print(gray[m[0]][m[1]], end=" ")
+				#         print(m, end=" ")
+				#     print()
+				#     print(avg_a, end=" ")
+				#     print(avg_b, end=" ")
+				#     print(avg_a - avg_b)
+				#     print()
+				#
+				# if k == 18 and l == 10:
+				#     for m in a:
+				#         print(gray[m[0]][m[1]], end=" ")
+				#         print(m, end=" ")
+				#     print()
+				#     for m in b:
+				#         print(gray[m[0]][m[1]], end=" ")
+				#         print(m, end=" ")
+				#     print()
+				#     print(avg_a, end=" ")
+				#     print(avg_b, end=" ")
+				#     print(avg_a - avg_b)
+				#     print()
+
+				# if (min(num_a) >= max(num_b)) and (abs(avg_a - avg_b) > th):  # a区的点设为大边点, b区为小边点, 5为假设！！！！！！！！！！！！！！！！！
+				# if avg_a - avg_b > th:  # a区的点设为大边点, b区为小边点, 5为假设！！！！！！！！！！！！！！！！！
+				if diffa > th:  # a区的点设为大边点, b区为小边点, 5为假设！！！！！！！！！！！！！！！！！
+					for i in a:
+						scores[i[0]][i[1]][layer] = scores[i[0]][i[1]][layer] + 100
+						if i[0] == 17 and i[1] == 9:
+							print("大")
+					for i in b:
+						scores[i[0]][i[1]][layer] = scores[i[0]][i[1]][layer] + 10
+						if i[0] == 17 and i[1] == 9:
+							print("小")
+				# if (min(num_b) >= max(num_a)) and (abs(avg_b - avg_a) > th):  # b区的点设为大边点，a区为小边点
+				# elif avg_b - avg_a > th:  # b区的点设为大边点，a区为小边点
+				elif diffb > th:  # b区的点设为大边点，a区为小边点
+					for i in a:
+						scores[i[0]][i[1]][layer] = scores[i[0]][i[1]][layer] + 10
+						if i[0] == 17 and i[1] == 9:
+							print("小")
+					for i in b:
+						scores[i[0]][i[1]][layer] = scores[i[0]][i[1]][layer] + 100
+						if i[0] == 17 and i[1] == 9:
+							print("大")
+				# elif (((min(num_a) >= max(num_b)) and (abs(avg_a - avg_b) <= th)) | (
+				#         (min(num_b) >= max(num_a)) and (abs(avg_b - avg_a) <= th)) | (
+				#         (max(num_a) >= min(num_b)) and (min(num_b) >= min(num_a))) | (
+				#         (max(num_b) >= min(num_a)) and (min(num_a) >= min(num_b)))):  # a,b算内部点，
+				else:
+					for i in a:
+						scores[i[0]][i[1]][layer] = scores[i[0]][i[1]][layer] + 1.0
+					for i in b:
+						scores[i[0]][i[1]][layer] = scores[i[0]][i[1]][layer] + 1.0
+		layer += 1
 	return scores, total_noise
