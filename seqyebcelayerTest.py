@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import Mymodify
+import fixnoise
 import os
 
 inpath = "D:\\experiment\\pic\\batch\\"
@@ -10,9 +11,23 @@ yyy = [+1, 0, -1, -1, -1, 0, +1, +1]
 src = "blur"
 # raw2 = np.array([[1, 1, 1], [1, 1, 1], [11, 11, 1]])
 # raw2 = np.array([[1, 100, 1], [1, 1, 1], [11, 11, 11]])
-raw = cv2.imread(inpath + src + ".jpg")
-raw2 = cv2.cvtColor(raw, cv2.COLOR_BGR2GRAY)
+# raw = cv2.imread(inpath + src + ".jpg")
+# raw2 = cv2.cvtColor(raw, cv2.COLOR_BGR2GRAY)
+x = 1
+y = 1
 # raw2 = np.array([[1, 1, 1], [1, 1, 5], [100, 100, 1]])
+# tag = np.array([[0, 0, 0], [0, 0, 1], [1, 0, 0]])
+
+raw2 = np.array([[66, 48, 50], [61, 12, 48], [85, 43, 60]])
+tag = np.array([[0, 0, 0], [0, 1, 0], [0, 0, 0]])
+print(raw2[x, y], end="  ")
+for k in range(8):
+	print(raw2[x + xxx[k], y + yyy[k]], end="  ")
+print()
+print(tag[x, y], end="  ")
+for k in range(8):
+	print(tag[x + xxx[k], y + yyy[k]], end="  ")
+print()
 # raw2 = np.array([[1, 1, 1], [1, 1, 1], [100, 1, 1]])
 # for i in range(1, raw2.shape[0] - 1):
 # 	for j in range(1, raw2.shape[1] - 1):
@@ -21,22 +36,31 @@ raw2 = cv2.cvtColor(raw, cv2.COLOR_BGR2GRAY)
 # print(a)
 # print(b)
 # print(noise)
-re1 = np.loadtxt(outpath + src + "  tagre" + ".csv", dtype=np.int, delimiter=",", encoding='utf-8')
-x = 76 - 1
-y = 229 - 1
-print(re1[76, 229])
+# re1 = np.loadtxt(outpath + src + "  tagre" + ".csv", dtype=np.int, delimiter=",", encoding='utf-8')
+# x = 76 - 1
+# y = 229 - 1
+
+
+# print(re1[76, 229])
+# for k in range(8):
+# 	print(re1[x + xxx[k], y + yyy[k]])
+# 	a, b, noise = Mymodify.Denoising(raw2, x + xxx[k], y + yyy[k])
+# 	print(a, end="  ")
+#
+# 	print(b, end="  ")
+#
+# 	print(noise, end="  ")
+# 	for m in a:
+# 		print(raw2[m[0],m[1]],end=" ")
+# 	for m in b:
+# 		print(raw2[m[0], m[1]], end=" ")
+# 	for m in noise:
+# 		print(raw2[m[0],m[1]],end=" ")
+# 	print()
+
+
+fixnoise.Denoising(raw2, 0, 0, tag)
+
+print(raw2[x][y], end="  ")
 for k in range(8):
-	print(re1[x + xxx[k], y + yyy[k]])
-	a, b, noise = Mymodify.Denoising(raw2, x + xxx[k], y + yyy[k])
-	print(a, end="  ")
-
-	print(b, end="  ")
-
-	print(noise, end="  ")
-	for m in a:
-		print(raw2[m[0],m[1]],end=" ")
-	for m in b:
-		print(raw2[m[0], m[1]], end=" ")
-	for m in noise:
-		print(raw2[m[0],m[1]],end=" ")
-	print()
+	print(raw2[x + xxx[k], y + yyy[k]], end="  ")
