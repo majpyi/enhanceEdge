@@ -16,3 +16,5 @@ for i in range(n):
 # print(mp)
 print(mp[0][0])
 print(li[0].type)
+print(li)
+print(abs(-1))

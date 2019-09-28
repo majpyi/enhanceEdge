@@ -20,19 +20,40 @@ n = 321
 m = 481
 # nodec = node()
 # mp = [m*nodec]*n
-mp = []
-li = []
+# li = []
 # for i in range(m):
 # 	li.append(node())
 # mp = li*
-for i in range(m + 1):
-	li.append(node())
+
 # mp = li*n
+# li = [][]
+mp = [[] for i in range(n + 1)]
+
 for i in range(n + 1):
-	mp.append(li)
+	for j in range(m + 1):
+		mp[i].append(node())
+#
+# mp = np.shape((n+1,m+1))
+# mp = None
+# for i in range((n+1)*(m+1)):
+# 	mp.append(node())
+# for i in range(n + 1):
+# # # 	mp[i] = []
+# 	for j in range(m + 1):
+# mp = np.concatenate(mp, node())
+
+# 		mp[i].append(node())
+# mp.append(li)
+# 	mp[i][j] = node()
+# mp = [[node()]*(m+1) for i in range(n+1)]
+# mp.reshape(n+1,m+1)
+
+
+print(mp)
+
 tp = np.zeros((10000000))
-dx = [0, 0, 1, -1]
-dy = [1, -1, 0, 0]
+mx = [0, 0, 1, -1]
+my = [1, -1, 0, 0]
 # vis = []
 vis = np.zeros((n + 1, m + 1))
 
@@ -54,13 +75,14 @@ def bfs(x, y, co):
 	list = []
 	list.append(X(x, y, co))
 	while len(list) != 0:
-		u = list.pop()
+		u = list[0]
+		list.remove(u)
 		#     q.pop();
 		mp[u.x][u.y].type = u.co
 		tp[co] = tp[co] + 1
 		for i in range(4):
-			nx = u.x + dx[i]
-			ny = u.y + dy[i]
+			nx = u.x + mx[i]
+			ny = u.y + my[i]
 			if 1 <= nx <= n and m >= ny >= 1 and abs(int(mp[u.x][u.y].gray) - int(mp[nx][ny].gray)) <= d and vis[nx][
 				ny] == 0:
 				vis[nx][ny] = 1
@@ -81,8 +103,13 @@ class Node:
 		self.type = type
 		self.gray = gray
 
-	def __cmp__(self, a):
-		return dx > a.dx
+	def __lt__(self, a):
+		# print(type(a.dx))
+		# print(type(self.dx))
+		return self.dx < a.dx
+
+	# def __cmp__(self, a):
+	# 	return dx > a.dx
 
 
 # bool operator<(const Node &a) const {
@@ -96,15 +123,15 @@ def dfs(x, y):
 	vis[x][y] = 2
 
 	for i in range(4):
-		nx = x + dx[i]
-		ny = y + dy[i]
+		nx = x + mx[i]
+		ny = y + my[i]
 		if (1 <= nx <= n and 1 <= ny <= m and mp[nx][ny].type != mp[x][y].type and
 				tp[mp[nx][ny].type] > D):
-			q.put(Node(x, y, abs(mp[x][y].gray - mp[nx][ny].gray), mp[nx][ny].type, mp[nx][ny].gray))
+			q.put(Node(x, y, abs(int(mp[x][y].gray) - int(mp[nx][ny].gray)), mp[nx][ny].type, mp[nx][ny].gray))
 
 	for i in range(4):
-		nx = x + dx[i]
-		ny = y + dy[i]
+		nx = x + mx[i]
+		ny = y + my[i]
 		if (1 <= nx <= n and 1 <= ny <= m and mp[nx][ny].type == mp[x][y].type and
 				vis[nx][ny] == 1):
 			dfs(nx, ny)
@@ -112,9 +139,10 @@ def dfs(x, y):
 
 def merge(t):
 	global dx
-	while q.qsize() != 0 and tp[t] > 0:
+	while not q.empty() and tp[t] > 0:
 		# u = q.top()
-		u = q.get_nowait()
+		u = q.get()
+		# print(type(u))
 		if vis[u.x][u.y] == 2:
 			vis[u.x][u.y] = 3
 			tp[t] = tp[t] - 1
@@ -123,10 +151,13 @@ def merge(t):
 		else:
 			continue
 		for j in range(4):
-			nx = u.x + dx[j]
-			ny = u.y + dy[j]
+			# print(type(u.x))
+			# print(u.x)
+
+			nx = u.x + mx[j]
+			ny = u.y + my[j]
 			if 1 <= nx <= n and 1 <= ny <= m and mp[nx][ny].type == t and vis[nx][ny] == 2:
-				dx = abs(mp[u.x][u.y].gray - mp[nx][ny].gray)
+				dx = abs(int(mp[u.x][u.y].gray) - int(mp[nx][ny].gray))
 				q.put(Node(nx, ny, dx, u.type, u.gray))
 
 
@@ -141,9 +172,9 @@ def work():
 			dt = 0
 			flag = 0
 			for k in range(4):
-				nx = i + dx[k]
-				ny = j + dy[k]
-				if nx >= 1 and n >= nx <= ny <= m and mp[nx][ny].type == mp[i][j].type:
+				nx = i + mx[k]
+				ny = j + my[k]
+				if 1 <= nx <= n and 1 <= ny <= m and mp[nx][ny].type == mp[i][j].type:
 					num = num + 1
 				else:
 					if nx == 0 or nx == n + 1 or ny == 0 or ny == m + 1:
@@ -165,7 +196,9 @@ def work():
 						mp[i][j].is_bd = 1
 					else:
 						mp[i][j].is_bd = 2
-		# mp[i][j].is_bd = mp[i][j].gray < df ? 1 : 2
+
+
+# mp[i][j].is_bd = mp[i][j].gray < df ? 1 : 2
 
 
 #
@@ -251,33 +284,46 @@ for i in range(1, n + 1):
 # //	print();
 #     /*----------------------------------*/
 
+
 for i in range(1, n + 1):
 	for j in range(1, m + 1):
 		t = mp[i][j].type
 		if tp[t] <= D and vis[i][j] == 1:
-			while q.qsize() != 0:
-				q.get_nowait()
+			while not q.empty():
+				q.get()
 			dfs(i, j)
 			merge(t)
 
 work()
 
 re = np.zeros((n + 1, m + 1))
+pic = np.zeros((n + 1, m + 1))
 
-tag = input()
+tag = int(input())
+
+# print(tag)
 
 if tag == 1:
 	for i in range(1, n + 1):
 		for j in range(1, m + 1):
 			re[i][j] = mp[i][j].type
+
 if tag == 2:
 	for i in range(1, n + 1):
 		for j in range(1, m + 1):
 			re[i][j] = mp[i][j].is_bd
+			if mp[i][j].is_bd == 3:
+				pic[i][j] = 175
+			elif mp[i][j].is_bd == 2:
+				pic[i][j] = 255
+			else:
+				pic[i][j] = 0
+	np.savetxt(outpath + "outpic.csv", re, fmt="%d", delimiter=',')
+	cv2.imwrite(outpath + "outpic" + ".jpg", pic)
 
 if tag == 3:
 	for i in range(1, n + 1):
 		for j in range(1, m + 1):
 			re[i][j] = mp[i][j].gray
-
-np.savetxt(outpath + "outpic.csv", re, fmt="%d", delimiter=',')
+	np.savetxt(outpath + "outpic.csv", re, fmt="%d", delimiter=',')
+	cv2.imwrite(outpath + "outpic" + ".jpg", re)
