@@ -41,8 +41,8 @@ for file in files:
 	# raw_Filter = raw
 
 	noise_num = 1
-	gra_th = 30
-	th = 25
+	# gra_th = 30
+	th = 15
 
 	cv2.imwrite(outpath + "raw2_Filter___" + str(th) + src + ".jpg", raw2_Filter)
 	cv2.imwrite(outpath + "raw_Filter___" + str(th) + src + ".jpg", raw_Filter)

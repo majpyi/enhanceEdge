@@ -85,7 +85,7 @@ cv2.imwrite("D:\\out\\try\\216053\\" + "raw2_Filter" + "___" + src + ".jpg", raw
 
 
 dilation = np.loadtxt(outpath + "merge____" + str(th) + src + ".csv", dtype=np.int, delimiter=",", encoding='utf-8')
-
+print(type(dilation))
 # dilation = np.array([[0, 0, 10, 0], [0, 0, 11, 0], [0, 0, 5, 0], [0, 0, 10, 0]])
 # xx = [-1, -1, -1, 0, +1, +1, +1, 0]
 # yy = [+1, 0, -1, -1, -1, 0, +1, +1]
